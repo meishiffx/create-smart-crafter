@@ -2,13 +2,24 @@ package com.tatnux.crafter.modules.crafter.blocks;
 
 import com.simibubi.create.foundation.gui.menu.MenuBase;
 import com.tatnux.crafter.modules.crafter.CrafterModule;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.items.SlotItemHandler;
 
 public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
+
+    public static final int RESULT_SLOT = 0;
+    private static final int CRAFT_SLOT_START = 1;
+    private static final int CONTAINER_START = 10;
 
     public CrafterMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
@@ -16,7 +27,6 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
 
     public CrafterMenu(MenuType<?> type, int id, Inventory inv, CrafterBlockEntity be) {
         super(type, id, inv, be);
-//        be.startOpen(player);
 
     }
 
@@ -26,6 +36,14 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
 
     @Override
     protected CrafterBlockEntity createOnClient(FriendlyByteBuf extraData) {
+        BlockPos readBlockPos = extraData.readBlockPos();
+        CompoundTag readNbt = extraData.readNbt();
+        ClientLevel world = Minecraft.getInstance().level;
+        BlockEntity blockEntity = world.getBlockEntity(readBlockPos);
+        if (blockEntity instanceof CrafterBlockEntity crafterBlockEntity) {
+            crafterBlockEntity.readClient(readNbt);
+            return crafterBlockEntity;
+        }
         return null;
     }
 
@@ -36,15 +54,20 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
 
     @Override
     protected void addSlots() {
-        CrafterInventory inventory = contentHolder.inventory;
+        this.contentHolder.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(itemHandler -> {
+            this.addSlot(new SlotItemHandler(itemHandler, RESULT_SLOT, 183, 78));
 
-//        int x = 23;
-//        int y = 22;
-//        for (int row = 0; row < 2; ++row)
-//            for (int col = 0; col < 9; ++col)
-//                addSlot(new SlotItemHandler(inventory, col + row * 9, x + col * 18, y + row * 18));
-//
-//        this.addPlayerSlots(8, 165);
+            for (int row = 0; row < 3; ++row)
+                for (int col = 0; col < 3; ++col)
+                    this.addSlot(new SlotItemHandler(itemHandler, CRAFT_SLOT_START + col + row * 3, 147 + col * 18, 21 + row * 18));
+
+            for (int row = 0; row < 2; ++row)
+                for (int col = 0; col < 9; ++col)
+                    this.addSlot(new SlotItemHandler(itemHandler, CONTAINER_START + col + row * 9, 40 + col * 18, 101 + row * 18));
+        });
+
+
+        this.addPlayerSlots(8, 165);
     }
 
     @Override
@@ -54,6 +77,6 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
 
     @Override
     public ItemStack quickMoveStack(Player pPlayer, int pIndex) {
-        return null;
+        return ItemStack.EMPTY;
     }
 }
