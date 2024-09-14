@@ -1,14 +1,12 @@
 package com.tatnux.crafter.modules.crafter.blocks;
 
 import com.simibubi.create.foundation.block.IBE;
-import com.tatnux.crafter.lib.blocks.BlockBase;
 import com.tatnux.crafter.modules.crafter.CrafterModule;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -17,8 +15,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.function.Function;
 
 public class CrafterBlock extends Block implements IBE<CrafterBlockEntity> {
 
@@ -37,7 +33,7 @@ public class CrafterBlock extends Block implements IBE<CrafterBlockEntity> {
             return InteractionResult.PASS;
         }
 
-        if (world.isClientSide){
+        if (world.isClientSide) {
             return InteractionResult.SUCCESS;
         }
 

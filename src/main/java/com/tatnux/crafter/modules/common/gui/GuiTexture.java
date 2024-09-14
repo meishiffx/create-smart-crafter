@@ -1,7 +1,6 @@
 package com.tatnux.crafter.modules.common.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.simibubi.create.Create;
 import com.simibubi.create.foundation.gui.UIRenderHelper;
 import com.simibubi.create.foundation.gui.element.ScreenElement;
 import com.simibubi.create.foundation.utility.Color;

@@ -2,18 +2,21 @@ package com.tatnux.crafter.modules.jei;
 
 import com.tatnux.crafter.modules.crafter.CrafterModule;
 import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
+import com.tatnux.crafter.modules.network.NetworkHandler;
 import mezz.jei.api.constants.RecipeTypes;
+import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.ingredient.IRecipeSlotView;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.ingredients.ITypedIngredient;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
-import net.minecraft.core.BlockPos;
+import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -47,12 +50,20 @@ public class CrafterRecipeTransferHandler implements IRecipeTransferHandler<Craf
     @Nullable
     public IRecipeTransferError transferRecipe(CrafterMenu container, @NotNull CraftingRecipe recipe, IRecipeSlotsView recipeLayout,
                                                @NotNull Player player, boolean maxTransfer, boolean doTransfer) {
-        BlockEntity inventory = container.contentHolder;
-        BlockPos pos = inventory.getBlockPos();
-        List<IRecipeSlotView> slotViews = recipeLayout.getSlotViews();
 
         if (doTransfer) {
-//            RFToolsUtilityJeiPlugin.transferRecipe(slotViews, pos);
+            List<IRecipeSlotView> slotViews = recipeLayout.getSlotViews();
+            NonNullList<ItemStack> items = NonNullList.withSize(10, ItemStack.EMPTY);
+            for (int i = 0; i < slotViews.size(); i++) {
+                List<ITypedIngredient<?>> allIngredients = slotViews.get(i).getAllIngredients().toList();
+                if (!allIngredients.isEmpty()) {
+                    Optional<ItemStack> ingredient = allIngredients.get(0).getIngredient(VanillaTypes.ITEM_STACK);
+                    if (ingredient.isPresent()) {
+                        items.set(i, ingredient.get());
+                    }
+                }
+            }
+            NetworkHandler.sendRecipeToServer(new PacketSendRecipe(items));
         }
 
         return null;
