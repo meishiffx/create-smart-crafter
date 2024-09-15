@@ -7,7 +7,7 @@ public class CrafterInventory extends ItemStackHandler {
     private final CrafterBlockEntity blockEntity;
 
     public CrafterInventory(CrafterBlockEntity blockEntity) {
-        super(28);
+        super(32);
         this.blockEntity = blockEntity;
     }
 

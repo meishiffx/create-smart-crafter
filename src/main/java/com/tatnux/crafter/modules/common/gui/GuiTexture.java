@@ -12,7 +12,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 public enum GuiTexture implements ScreenElement {
 
-    CRAFTER("crafter", 188, 171);
+    CRAFTER("crafter", 224, 171);
 
 
     public static final int FONT_COLOR = 0x575F7A;

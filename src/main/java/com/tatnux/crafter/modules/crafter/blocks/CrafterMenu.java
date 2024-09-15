@@ -1,6 +1,6 @@
 package com.tatnux.crafter.modules.crafter.blocks;
 
-import com.simibubi.create.foundation.gui.menu.GhostItemMenu;
+import com.simibubi.create.foundation.gui.menu.MenuBase;
 import com.tatnux.crafter.modules.crafter.CrafterModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -14,15 +14,16 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
 
-public class CrafterMenu extends GhostItemMenu<CrafterBlockEntity> {
+public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
 
-    public static final int RESULT_SLOT = 0;
+    private static final int CRAFT_RESULT_SLOT = 0;
     private static final int CRAFT_SLOT_START = 1;
     private static final int CONTAINER_START = 10;
+    private static final int RESULT_SLOT = 28;
 
     public CrafterMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
@@ -34,13 +35,8 @@ public class CrafterMenu extends GhostItemMenu<CrafterBlockEntity> {
     }
 
     @Override
-    protected ItemStackHandler createGhostInventory() {
-        return new ItemStackHandler(10);
-    }
+    protected void initAndReadInventory(CrafterBlockEntity contentHolder) {
 
-    @Override
-    protected boolean allowRepeats() {
-        return false;
     }
 
     public static CrafterMenu create(int id, Inventory inv, CrafterBlockEntity be) {
@@ -66,19 +62,22 @@ public class CrafterMenu extends GhostItemMenu<CrafterBlockEntity> {
 
     @Override
     protected void addSlots() {
-        this.addPlayerSlots(8, 165);
+        this.addPlayerSlots(58, 165);
 
         this.contentHolder.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(itemHandler -> {
-            this.addSlot(new SlotItemHandler(this.ghostInventory, RESULT_SLOT, 183, 78));
+            this.addSlot(new SlotItemHandler(itemHandler, CRAFT_RESULT_SLOT, 222, 55));
 
-            for (int row = 0; row < 3; ++row)
-                for (int col = 0; col < 3; ++col)
-                    this.addSlot(new SlotItemHandler(this.ghostInventory, CRAFT_SLOT_START + col + row * 3, 147 + col * 18, 21 + row * 18));
+            this.addSlots(itemHandler, CRAFT_SLOT_START, 186, -2, 3, 3);
+            this.addSlots(itemHandler, CONTAINER_START, 78, 78, 2, 9);
+            this.addSlots(itemHandler, RESULT_SLOT, 38, 78, 2, 2);
 
-            for (int row = 0; row < 2; ++row)
-                for (int col = 0; col < 9; ++col)
-                    this.addSlot(new SlotItemHandler(itemHandler, CONTAINER_START + col + row * 9, 40 + col * 18, 101 + row * 18));
         });
+    }
+
+    private void addSlots(IItemHandler itemHandler, int index, int x, int y, int row, int col) {
+        for (int iRow = 0; iRow < row; ++iRow)
+            for (int iCol = 0; iCol < col; ++iCol)
+                this.addSlot(new SlotItemHandler(itemHandler, index + iCol + iRow * col, x + iCol * 18, y + iRow * 18));
     }
 
     @Override
@@ -96,7 +95,7 @@ public class CrafterMenu extends GhostItemMenu<CrafterBlockEntity> {
             return;
         }
 
-        this.contentHolder.inventory.setStackInSlot(RESULT_SLOT, stacks.get(0));
+        this.contentHolder.inventory.setStackInSlot(CRAFT_RESULT_SLOT, stacks.get(0));
 
         for (int i = 1; i < stacks.size(); i++) {
             this.contentHolder.inventory.setStackInSlot(CRAFT_SLOT_START + i - 1, stacks.get(i));

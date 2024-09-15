@@ -4,11 +4,17 @@ import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.tatnux.crafter.modules.common.module.Modules;
 import com.tatnux.crafter.modules.crafter.CrafterModule;
 import com.tatnux.crafter.modules.network.NetworkHandler;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
+import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
@@ -30,7 +36,7 @@ public class SimplyCrafter {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         Dist dist = FMLEnvironment.dist;
 
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+        bus.addListener(this::setup);
 
         REGISTRATE.registerEventListeners(bus);
         setupModules(bus, dist);
