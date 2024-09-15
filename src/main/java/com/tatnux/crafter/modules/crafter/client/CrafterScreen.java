@@ -1,15 +1,21 @@
-package com.tatnux.crafter.modules.crafter.blocks;
+package com.tatnux.crafter.modules.crafter.client;
 
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.tatnux.crafter.modules.common.gui.GuiTexture;
-import com.tatnux.crafter.modules.crafter.blocks.widget.CrafterRecipeList;
-import net.minecraft.client.gui.Font;
+import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
+import com.tatnux.crafter.modules.crafter.client.widget.RecipeList;
+import com.tatnux.crafter.modules.crafter.data.CrafterRecipe;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 
@@ -20,7 +26,7 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
     protected static final GuiTexture BG = GuiTexture.CRAFTER;
     protected static final AllGuiTextures PLAYER = AllGuiTextures.PLAYER_INVENTORY;
 
-    private CrafterRecipeList recipeList;
+    public final NonNullList<CrafterRecipe> recipes = NonNullList.withSize(9, new CrafterRecipe());
 
     public CrafterScreen(CrafterMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -40,29 +46,19 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
                     this.minecraft.player.closeContainer();
                 }));
 
-        this.recipeList = new CrafterRecipeList(
-                this,
-                200,
-                50,
-                80,
-                50,
-                50
-        );
-        this.recipeList.setLeftPos(this.leftPos);
-        this.recipeList.refreshList();
 
-        this.addRenderableWidget(this.recipeList);
-
+        RecipeList recipeList = new RecipeList(this, this.leftPos + 38, this.topPos - 2, 110, 75);
+        this.addRenderableWidget(recipeList);
+        recipeList.init();
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        this.recipeList.render(graphics, mouseX, mouseY, partialTicks);
-        super.render(graphics, mouseX, mouseY, partialTicks);
+    public <T extends GuiEventListener & Renderable & NarratableEntry> @NotNull T addRenderableWidget(@NotNull T pWidget) {
+        return super.addRenderableWidget(pWidget);
     }
 
     @Override
-    protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+    protected void renderBg(@NotNull GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
         int x = this.leftPos + this.imageWidth - BG.width;
         int y = this.topPos - 23;
 
@@ -72,10 +68,6 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
         int invX = this.getLeftOfCentered(PLAYER_INVENTORY.width);
         int invY = this.topPos + this.imageHeight - PLAYER.height;
         this.renderPlayerInventory(graphics, invX, invY);
-    }
-
-    public Font getFontRenderer() {
-        return this.font;
     }
 
 }

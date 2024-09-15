@@ -6,7 +6,7 @@ import com.tatnux.crafter.modules.common.module.IModule;
 import com.tatnux.crafter.modules.crafter.blocks.CrafterBlock;
 import com.tatnux.crafter.modules.crafter.blocks.CrafterBlockEntity;
 import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
-import com.tatnux.crafter.modules.crafter.blocks.CrafterScreen;
+import com.tatnux.crafter.modules.crafter.client.CrafterScreen;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.entry.MenuEntry;

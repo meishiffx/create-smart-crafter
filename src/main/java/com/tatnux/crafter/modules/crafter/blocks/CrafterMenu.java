@@ -1,7 +1,11 @@
 package com.tatnux.crafter.modules.crafter.blocks;
 
 import com.simibubi.create.foundation.gui.menu.MenuBase;
+import com.tatnux.crafter.modules.common.menu.SlotItemHandlerFactory;
 import com.tatnux.crafter.modules.crafter.CrafterModule;
+import com.tatnux.crafter.modules.crafter.blocks.slots.InfoSlot;
+import com.tatnux.crafter.modules.crafter.blocks.slots.ResultSlot;
+import com.tatnux.crafter.modules.crafter.data.CrafterRecipe;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -10,7 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -19,6 +23,19 @@ import net.minecraftforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
 
 public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
+
+    private final CraftingContainer workInventory = new TransientCraftingContainer(new AbstractContainerMenu(null, -1) {
+        @SuppressWarnings("NullableProblems")
+        @Override
+        public boolean stillValid(Player var1) {
+            return false;
+        }
+
+        @Override
+        public ItemStack quickMoveStack(Player player, int slot) {
+            return ItemStack.EMPTY;
+        }
+    }, 3, 3);
 
     private static final int CRAFT_RESULT_SLOT = 0;
     private static final int CRAFT_SLOT_START = 1;
@@ -62,27 +79,65 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
 
     @Override
     protected void addSlots() {
-        this.addPlayerSlots(58, 165);
-
         this.contentHolder.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(itemHandler -> {
-            this.addSlot(new SlotItemHandler(itemHandler, CRAFT_RESULT_SLOT, 222, 55));
+            this.addSlot(new InfoSlot(itemHandler, CRAFT_RESULT_SLOT, 222, 57));
 
-            this.addSlots(itemHandler, CRAFT_SLOT_START, 186, -2, 3, 3);
-            this.addSlots(itemHandler, CONTAINER_START, 78, 78, 2, 9);
-            this.addSlots(itemHandler, RESULT_SLOT, 38, 78, 2, 2);
-
+            this.addSlots(itemHandler, SlotItemHandler::new, CRAFT_SLOT_START, 186, -2, 3, 3);
+            this.addSlots(itemHandler, SlotItemHandler::new, CONTAINER_START, 78, 80, 2, 9);
+            this.addSlots(itemHandler, ResultSlot::new, RESULT_SLOT, 38, 80, 2, 2);
         });
+        this.addPlayerSlots(58, 167);
     }
 
-    private void addSlots(IItemHandler itemHandler, int index, int x, int y, int row, int col) {
+    private void addSlots(IItemHandler itemHandler, SlotItemHandlerFactory factory, int index, int x, int y, int row, int col) {
         for (int iRow = 0; iRow < row; ++iRow)
             for (int iCol = 0; iCol < col; ++iCol)
-                this.addSlot(new SlotItemHandler(itemHandler, index + iCol + iRow * col, x + iCol * 18, y + iRow * 18));
+                this.addSlot(factory.on(itemHandler, index + iCol + iRow * col, x + iCol * 18, y + iRow * 18));
     }
 
     @Override
     protected void saveData(CrafterBlockEntity contentHolder) {
 
+    }
+
+    @Override
+    public void clicked(int slotId, int dragType, @NotNull ClickType clickTypeIn, @NotNull Player player) {
+        if (slotId < CRAFT_SLOT_START || slotId >= CONTAINER_START) {
+            super.clicked(slotId, dragType, clickTypeIn, player);
+            return;
+        }
+        if (clickTypeIn == ClickType.THROW)
+            return;
+
+        ItemStack held = this.getCarried();
+        if (clickTypeIn == ClickType.CLONE) {
+            if (player.isCreative() && held.isEmpty()) {
+                ItemStack stackInSlot = this.contentHolder.inventory.getStackInSlot(slotId)
+                        .copy();
+                stackInSlot.setCount(stackInSlot.getMaxStackSize());
+                this.setCarried(stackInSlot);
+                return;
+            }
+            return;
+        }
+
+        ItemStack insert;
+        if (held.isEmpty()) {
+            insert = ItemStack.EMPTY;
+        } else {
+            insert = held.copy();
+            insert.setCount(1);
+        }
+        this.contentHolder.inventory.setStackInSlot(slotId, insert);
+        this.getSlot(slotId).setChanged();
+
+        for (int i = 0; i < 9; i++) {
+            this.workInventory.setItem(i, this.contentHolder.inventory.getStackInSlot(i + CRAFT_SLOT_START));
+        }
+        CrafterRecipe.findRecipe(this.contentHolder.getLevel(), this.workInventory).ifPresentOrElse(recipe -> {
+            ItemStack result = recipe.assemble(this.workInventory, this.contentHolder.getLevel().registryAccess());
+            this.contentHolder.inventory.setStackInSlot(CRAFT_RESULT_SLOT, result);
+        }, () -> this.contentHolder.inventory.setStackInSlot(CRAFT_RESULT_SLOT, ItemStack.EMPTY));
     }
 
     @Override
