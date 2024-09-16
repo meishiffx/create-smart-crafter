@@ -1,4 +1,4 @@
-package com.tatnux.crafter.modules.common.module;
+package com.tatnux.crafter.lib.module;
 
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.IEventBus;

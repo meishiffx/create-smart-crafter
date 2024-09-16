@@ -1,4 +1,4 @@
-package com.tatnux.crafter.modules.jei;
+package com.tatnux.crafter.jei;
 
 import com.tatnux.crafter.modules.crafter.CrafterModule;
 import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;

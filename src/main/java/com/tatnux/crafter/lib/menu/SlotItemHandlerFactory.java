@@ -1,4 +1,4 @@
-package com.tatnux.crafter.modules.common.menu;
+package com.tatnux.crafter.lib.menu;
 
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;

@@ -1,7 +1,7 @@
 package com.tatnux.crafter.modules.crafter.blocks;
 
 import com.simibubi.create.foundation.gui.menu.MenuBase;
-import com.tatnux.crafter.modules.common.menu.SlotItemHandlerFactory;
+import com.tatnux.crafter.lib.menu.SlotItemHandlerFactory;
 import com.tatnux.crafter.modules.crafter.CrafterModule;
 import com.tatnux.crafter.modules.crafter.blocks.slots.InfoSlot;
 import com.tatnux.crafter.modules.crafter.blocks.slots.ResultSlot;

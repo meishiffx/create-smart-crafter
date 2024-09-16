@@ -1,4 +1,4 @@
-package com.tatnux.crafter.modules.common.gui;
+package com.tatnux.crafter.lib.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.gui.UIRenderHelper;

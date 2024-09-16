@@ -2,7 +2,7 @@ package com.tatnux.crafter.modules.crafter;
 
 
 import com.simibubi.create.foundation.data.SharedProperties;
-import com.tatnux.crafter.modules.common.module.IModule;
+import com.tatnux.crafter.lib.module.IModule;
 import com.tatnux.crafter.modules.crafter.blocks.CrafterBlock;
 import com.tatnux.crafter.modules.crafter.blocks.CrafterBlockEntity;
 import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;

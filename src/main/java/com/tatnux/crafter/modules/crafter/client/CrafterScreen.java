@@ -4,7 +4,7 @@ import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.IconButton;
-import com.tatnux.crafter.modules.common.gui.GuiTexture;
+import com.tatnux.crafter.lib.gui.GuiTexture;
 import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
 import com.tatnux.crafter.modules.crafter.client.widget.RecipeList;
 import com.tatnux.crafter.modules.crafter.data.CrafterRecipe;
