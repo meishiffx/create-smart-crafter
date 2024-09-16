@@ -131,6 +131,10 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
         this.contentHolder.inventory.setStackInSlot(slotId, insert);
         this.getSlot(slotId).setChanged();
 
+        this.updateWorkInventory();
+    }
+
+    private void updateWorkInventory() {
         for (int i = 0; i < 9; i++) {
             this.workInventory.setItem(i, this.contentHolder.inventory.getStackInSlot(i + CRAFT_SLOT_START));
         }
@@ -145,16 +149,26 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
         return ItemStack.EMPTY;
     }
 
+    @Override
+    public boolean canDragTo(Slot pSlot) {
+        return super.canDragTo(pSlot);
+    }
+
+    @Override
+    public boolean canTakeItemForPickAll(ItemStack pStack, Slot pSlot) {
+        return pSlot.container == this.playerInventory || pSlot.index >= CONTAINER_START;
+    }
+
     public void transferRecipe(NonNullList<ItemStack> stacks) {
         if (stacks.isEmpty()) {
             return;
         }
 
         this.contentHolder.inventory.setStackInSlot(CRAFT_RESULT_SLOT, stacks.get(0));
-
         for (int i = 1; i < stacks.size(); i++) {
             this.contentHolder.inventory.setStackInSlot(CRAFT_SLOT_START + i - 1, stacks.get(i));
         }
+        this.updateWorkInventory();
         this.broadcastChanges();
     }
 }

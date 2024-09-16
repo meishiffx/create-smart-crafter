@@ -4,11 +4,13 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.tatnux.crafter.modules.crafter.CrafterModule;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
@@ -50,5 +52,29 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
     @Override
     public @Nullable AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
         return CrafterMenu.create(id, inv, this);
+    }
+
+    @Override
+    protected void write(CompoundTag tag, boolean clientPacket) {
+        super.write(tag, clientPacket);
+        tag.put("inventory", this.inventory.serializeNBT());
+    }
+
+    @Override
+    public void writeSafe(CompoundTag tag) {
+        super.writeSafe(tag);
+//        tag.put("inventory", this.inventory.serializeNBT());
+    }
+
+    @Override
+    protected void read(CompoundTag tag, boolean clientPacket) {
+        super.read(tag, clientPacket);
+        this.inventory.deserializeNBT(tag.getCompound("inventory"));
+    }
+
+    @Override
+    public void saveToItem(ItemStack pStack) {
+//        pStack.addTagElement("inventory", inventory.serializeNBT());
+        super.saveToItem(pStack);
     }
 }

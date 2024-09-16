@@ -4,10 +4,12 @@ import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.IconButton;
+import com.tatnux.crafter.jei.PacketSendRecipe;
 import com.tatnux.crafter.lib.gui.GuiTexture;
 import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
 import com.tatnux.crafter.modules.crafter.client.widget.RecipeList;
 import com.tatnux.crafter.modules.crafter.data.CrafterRecipe;
+import com.tatnux.crafter.modules.network.NetworkHandler;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -15,6 +17,7 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -44,6 +47,14 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
                 AllIcons.I_CONFIRM)
                 .withCallback(() -> {
                     this.minecraft.player.closeContainer();
+                }));
+
+        this.addRenderableWidget(new IconButton(
+                this.leftPos + 185,
+                this.topPos + 56,
+                AllIcons.I_TRASH)
+                .withCallback(() -> {
+                    NetworkHandler.sendRecipeToServer(PacketSendRecipe.create(NonNullList.withSize(10, ItemStack.EMPTY)));
                 }));
 
 
