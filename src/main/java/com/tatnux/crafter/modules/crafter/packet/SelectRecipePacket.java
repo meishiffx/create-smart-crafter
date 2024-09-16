@@ -8,7 +8,7 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-public record SelectRecipePacket(byte slot) {
+public record SelectRecipePacket(byte slot) implements CrafterPacket {
 
     public void write(FriendlyByteBuf friendlyByteBuf) {
         friendlyByteBuf.writeByte(slot);
@@ -18,15 +18,8 @@ public record SelectRecipePacket(byte slot) {
         return new SelectRecipePacket(friendlyByteBuf.readByte());
     }
 
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ServerPlayer player = ctx.get().getSender();
-            if (player != null) {
-                ServerPlayer sender = Objects.requireNonNull(ctx.get().getSender());
-                if (sender.containerMenu instanceof CrafterMenu menu) {
-                    menu.contentHolder.select(this.slot);
-                }
-            }
-        });
+    @Override
+    public void handleMenu(CrafterMenu menu) {
+        menu.contentHolder.select(this.slot);
     }
 }

@@ -29,11 +29,13 @@ import org.jetbrains.annotations.NotNull;
 public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
 
     public static final int CRAFT_RESULT_SLOT = 0;
-    public static final int CRAFT_SLOT_START = 1;
-    public static final int CONTAINER_START = 10;
-    public static final int RESULT_SLOT = 28;
-
-    private final CraftingContainer workInventory = new WorkingCraftingInventory();
+    public static final int CRAFT_SLOT_START = CRAFT_RESULT_SLOT + 1;
+    public static final int CRAFT_SLOTS_SIZE = 9;
+    public static final int CONTAINER_START = CRAFT_SLOT_START + CRAFT_SLOTS_SIZE;
+    public static final int CONTAINER_SIZE = 18;
+    public static final int RESULT_SLOT_START = CONTAINER_START + CONTAINER_SIZE;
+    public static final int RESULT_SLOT_SIZE = 4;
+    public static final int PLAYER_SLOT_START = RESULT_SLOT_START + RESULT_SLOT_SIZE;
 
     public CrafterMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
@@ -72,7 +74,7 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
 
             this.addSlots(itemHandler, SlotItemHandler::new, CRAFT_SLOT_START, 186, -2, 3, 3);
             this.addSlots(itemHandler, SlotItemHandler::new, CONTAINER_START, 78, 80, 2, 9);
-            this.addSlots(itemHandler, ResultSlot::new, RESULT_SLOT, 38, 80, 2, 2);
+            this.addSlots(itemHandler, ResultSlot::new, RESULT_SLOT_START, 38, 80, 2, 2);
         });
         this.addPlayerSlots(58, 167);
     }
@@ -123,25 +125,37 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
         this.contentHolder.inventory.setStackInSlot(slotId, insert);
         this.getSlot(slotId).setChanged();
 
-        this.updateWorkInventory();
-    }
-
-    private void updateWorkInventory() {
-        if (this.contentHolder.getLevel().isClientSide) {
-            return;
-        }
-        for (int i = 0; i < 9; i++) {
-            this.workInventory.setItem(i, this.contentHolder.inventory.getStackInSlot(i + CRAFT_SLOT_START));
-        }
-        CrafterRecipe.findRecipe(this.contentHolder.getLevel(), this.workInventory).ifPresentOrElse(recipe -> {
-            ItemStack result = recipe.assemble(this.workInventory, this.contentHolder.getLevel().registryAccess());
-            this.contentHolder.saveRecipe(recipe, this.workInventory.getItems(), result);
-        }, () -> this.contentHolder.clearRecipe(this.workInventory.getItems()));
+        this.contentHolder.updateWorkInventory();
     }
 
     @Override
     public @NotNull ItemStack quickMoveStack(@NotNull Player player, int index) {
-        return ItemStack.EMPTY;
+        ItemStack itemStack = ItemStack.EMPTY;
+        if (index < CONTAINER_START) {
+            return itemStack;
+        }
+
+        Slot slot = this.slots.get(index);
+        if (slot.hasItem()) {
+            ItemStack item = slot.getItem();
+            itemStack = item.copy();
+
+            if (index < PLAYER_SLOT_START) {
+                if (!this.moveItemStackTo(item, PLAYER_SLOT_START, this.slots.size(), true)) {
+                    return ItemStack.EMPTY;
+                }
+            } else if (!this.moveItemStackTo(item, CONTAINER_START, RESULT_SLOT_START, false)) {
+                return ItemStack.EMPTY;
+            }
+
+            if (item.isEmpty()) {
+                slot.setByPlayer(ItemStack.EMPTY);
+            } else {
+                slot.setChanged();
+            }
+
+        }
+        return itemStack;
     }
 
     @Override
@@ -163,7 +177,7 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
         for (int i = 1; i < stacks.size(); i++) {
             this.contentHolder.inventory.setStackInSlot(CRAFT_SLOT_START + i - 1, stacks.get(i));
         }
-        this.updateWorkInventory();
+        this.contentHolder.updateWorkInventory();
         this.contentHolder.setChanged();
     }
 }

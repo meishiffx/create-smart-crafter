@@ -1,6 +1,7 @@
 package com.tatnux.crafter.modules.crafter.client.widget;
 
 import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
+import com.tatnux.crafter.lib.gui.ItemRenderUtils;
 import com.tatnux.crafter.modules.crafter.client.CrafterScreen;
 import com.tatnux.crafter.modules.crafter.data.CrafterRecipe;
 import com.tatnux.crafter.modules.network.NetworkHandler;
@@ -15,7 +16,9 @@ import java.awt.*;
 
 public class RecipeEntry extends AbstractSimiWidget {
 
-    public static final int HOVER_COLOR = new Color(130, 143, 143).getRGB();
+    public static final int HOVER_COLOR = new Color(138, 148, 153).getRGB();
+    public static final int HOVER_COLOR_DARK = new Color(147, 158, 163).getRGB();
+    public static final int SELECTED_COLOR = new Color(91, 153, 194).getRGB();
 
     public byte index;
     private final CrafterScreen parent;
@@ -31,11 +34,14 @@ public class RecipeEntry extends AbstractSimiWidget {
     protected void doRender(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         int color = -1;
         if (this.parent.getMenu().contentHolder.selected == this.index) {
-            color = Color.BLUE.getRGB();
-        } else if (this.isMouseOver(mouseX, mouseY)) {
-            color = HOVER_COLOR;
-        } else if (this.index % 2 == 0) {
-            color = Color.GRAY.getRGB();
+            color = SELECTED_COLOR;
+        } else {
+            boolean dark = this.index % 2 == 0;
+            if (this.isMouseOver(mouseX, mouseY)) {
+                color = dark ? HOVER_COLOR_DARK : HOVER_COLOR;
+            } else if (dark) {
+                color = Color.GRAY.getRGB();
+            }
         }
 
         if (color != -1) {
@@ -52,12 +58,12 @@ public class RecipeEntry extends AbstractSimiWidget {
         graphics.enableScissor(this.getX(), this.getY(), this.getX() + this.getWidth() - 1, this.getY() + this.getHeight());
 
         if (!output.isEmpty()) {
-            graphics.renderItem(output, this.getX(), this.getY());
+            ItemRenderUtils.renderItem(graphics, output, this.getX() + 1, this.getY() + 1, 13);
         }
 
         graphics.drawString(Minecraft.getInstance().font,
                 output.isEmpty() ? Component.literal("<empty>") : output.getHoverName(),
-                this.getX() + 19,
+                this.getX() + 16,
                 this.getY() + 4,
                 0xFFFFFF,
                 false);

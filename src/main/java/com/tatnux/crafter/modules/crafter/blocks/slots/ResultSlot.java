@@ -15,4 +15,6 @@ public class ResultSlot extends SlotItemHandler {
     public boolean mayPlace(@NotNull ItemStack stack) {
         return false;
     }
+
+
 }

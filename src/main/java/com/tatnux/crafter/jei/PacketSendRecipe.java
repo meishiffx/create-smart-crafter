@@ -2,6 +2,7 @@ package com.tatnux.crafter.jei;
 
 import com.tatnux.crafter.SimplyCrafter;
 import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
+import com.tatnux.crafter.modules.crafter.packet.CrafterPacket;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -14,7 +15,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 
-public record PacketSendRecipe(NonNullList<ItemStack> stacks) {
+public record PacketSendRecipe(NonNullList<ItemStack> stacks) implements CrafterPacket {
 
     public static final ResourceLocation ID = new ResourceLocation(SimplyCrafter.MOD_ID, "sendrecipe");
 
@@ -38,14 +39,8 @@ public record PacketSendRecipe(NonNullList<ItemStack> stacks) {
         return new PacketSendRecipe(stacks);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        if (ctx.get().getDirection() == NetworkDirection.PLAY_TO_SERVER) {
-            ctx.get().enqueueWork(() -> {
-                ServerPlayer sender = Objects.requireNonNull(ctx.get().getSender());
-                if (sender.containerMenu instanceof CrafterMenu menu) {
-                    menu.transferRecipe(this.stacks);
-                }
-            });
-        }
+    @Override
+    public void handleMenu(CrafterMenu menu) {
+        menu.transferRecipe(this.stacks);
     }
 }

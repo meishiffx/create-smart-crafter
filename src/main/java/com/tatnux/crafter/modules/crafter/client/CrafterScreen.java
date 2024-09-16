@@ -6,10 +6,13 @@ import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.tatnux.crafter.jei.PacketSendRecipe;
+import com.tatnux.crafter.lib.gui.CrafterIconButton;
 import com.tatnux.crafter.lib.gui.GuiTexture;
 import com.tatnux.crafter.lib.gui.WidgetBox;
 import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
 import com.tatnux.crafter.modules.crafter.client.widget.RecipeList;
+import com.tatnux.crafter.modules.crafter.data.CraftMode;
+import com.tatnux.crafter.modules.crafter.data.CrafterRecipe;
 import com.tatnux.crafter.modules.network.NetworkHandler;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
@@ -31,6 +34,8 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
     protected static final GuiTexture BG = GuiTexture.CRAFTER;
     protected static final AllGuiTextures PLAYER = AllGuiTextures.PLAYER_INVENTORY;
 
+    private AbstractSimiWidget resetButton;
+
     public CrafterScreen(CrafterMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
     }
@@ -41,15 +46,17 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
         this.setWindowOffset(-11, 0);
         super.init();
 
+        int yFooter = this.topPos + BG.height - 47;
+
         this.addRenderableWidget(new IconButton(
                 this.leftPos + 30 + BG.width - 33,
-                this.topPos + BG.height - 47,
+                yFooter,
                 AllIcons.I_CONFIRM)
                 .withCallback(() -> {
                     this.minecraft.player.closeContainer();
                 }));
 
-        AbstractSimiWidget resetButton = new IconButton(
+        this.resetButton = new IconButton(
                 this.leftPos + 185,
                 this.topPos + 56,
                 AllIcons.I_TRASH)
@@ -57,8 +64,68 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
                     NonNullList<ItemStack> items = NonNullList.withSize(10, ItemStack.EMPTY);
                     NetworkHandler.sendRecipeToServer(PacketSendRecipe.create(items));
                 });
-        this.addRenderableWidget(resetButton);
-        this.addRenderableWidget(new WidgetBox(resetButton, BOX_COLOR));
+        this.addRenderableWidget(this.resetButton);
+        this.addRenderableWidget(new WidgetBox(this.resetButton, BOX_COLOR));
+
+        this.resetButton = new IconButton(
+                this.leftPos + 185,
+                this.topPos + 56,
+                AllIcons.I_TRASH)
+                .withCallback(() -> {
+                    NonNullList<ItemStack> items = NonNullList.withSize(10, ItemStack.EMPTY);
+                    NetworkHandler.sendRecipeToServer(PacketSendRecipe.create(items));
+                });
+
+        int buttonsX = this.leftPos + 40;
+
+        AbstractSimiWidget extButton = new CrafterIconButton(
+                buttonsX,
+                yFooter,
+                AllIcons.I_PRIORITY_VERY_LOW)
+                .withDisabled(() -> this.menu.contentHolder.getSelectedRecipe().getCraftMode() == CraftMode.EXT)
+                .withTooltip(Component.literal("Ext"))
+                .withDescription(Component.literal("All items output will go in the result slots."))
+                .withCallback(() -> this.updateCraftMode(CraftMode.EXT));
+
+        AbstractSimiWidget extCButton = new CrafterIconButton(
+                buttonsX + 18,
+                yFooter,
+                AllIcons.I_PRIORITY_LOW)
+                .withDisabled(() -> this.menu.contentHolder.getSelectedRecipe().getCraftMode() == CraftMode.EXTC)
+                .withTooltip(Component.literal("Secondary Int"))
+                .withDescription(Component.literal("The primary result will go in the result slots"), Component.literal("and the secondary item in the ingredients slots."))
+                .withCallback(() -> this.updateCraftMode(CraftMode.EXTC));
+
+        AbstractSimiWidget intButton = new CrafterIconButton(
+                buttonsX + 18 + 18,
+                yFooter,
+                AllIcons.I_ROTATE_CCW)
+                .withDisabled(() -> this.menu.contentHolder.getSelectedRecipe().getCraftMode() == CraftMode.INT)
+                .withTooltip(Component.literal("Int"))
+                .withDescription(Component.literal("All items output will go back in the ingredients slots."))
+                .withCallback(() -> this.updateCraftMode(CraftMode.INT));
+
+        int keepGap = 18 * 4;
+
+        AbstractSimiWidget keepButton = new CrafterIconButton(
+                buttonsX + keepGap,
+                yFooter,
+                AllIcons.I_WHITELIST_OR)
+                .withDisabled(() -> this.menu.contentHolder.keepMode)
+                .withTooltip(Component.literal("Keep Mode"))
+                .withDescription(Component.literal("1 item will remain in each ingredients slots."))
+                .withCallback(() -> this.updateKeepMode(true));
+
+        AbstractSimiWidget dontKeepButton = new CrafterIconButton(
+                buttonsX + keepGap + 18,
+                yFooter,
+                AllIcons.I_WHITELIST_NOT)
+                .withDisabled(() -> !this.menu.contentHolder.keepMode)
+                .withTooltip(Component.literal("Out Mode"))
+                .withDescription(Component.literal("No item is kept in the ingredients slots."))
+                .withCallback(() -> this.updateKeepMode(false));
+
+        this.addRenderableWidgets(extButton, extCButton, intButton, keepButton, dontKeepButton);
 
 
         RecipeList recipeList = new RecipeList(this, this.leftPos + 38, this.topPos - 2, 110, 75);
@@ -82,6 +149,19 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
         int invX = this.getLeftOfCentered(PLAYER_INVENTORY.width);
         int invY = this.topPos + this.imageHeight - PLAYER.height;
         this.renderPlayerInventory(graphics, invX, invY);
+    }
+
+    private void updateCraftMode(CraftMode mode) {
+        CrafterRecipe selectedRecipe = this.menu.contentHolder.getSelectedRecipe();
+        if (selectedRecipe.getCraftMode() != mode) {
+            NetworkHandler.selectCraftMode(mode);
+        }
+    }
+
+    private void updateKeepMode(boolean keepMode) {
+        if (this.menu.contentHolder.keepMode != keepMode) {
+            NetworkHandler.setKeepMode(keepMode);
+        }
     }
 
 }
