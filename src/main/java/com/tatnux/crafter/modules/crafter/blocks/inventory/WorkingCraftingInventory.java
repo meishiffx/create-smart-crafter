@@ -21,4 +21,6 @@ public class WorkingCraftingInventory extends TransientCraftingContainer {
             }
         }, 3, 3);
     }
+
+
 }

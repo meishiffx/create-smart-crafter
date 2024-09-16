@@ -55,7 +55,6 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
                 AllIcons.I_TRASH)
                 .withCallback(() -> {
                     NonNullList<ItemStack> items = NonNullList.withSize(10, ItemStack.EMPTY);
-                    this.getMenu().transferRecipe(items);
                     NetworkHandler.sendRecipeToServer(PacketSendRecipe.create(items));
                 });
         this.addRenderableWidget(resetButton);

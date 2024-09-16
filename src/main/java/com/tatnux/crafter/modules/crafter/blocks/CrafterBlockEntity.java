@@ -8,12 +8,13 @@ import com.tatnux.crafter.modules.crafter.data.CrafterRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -34,9 +35,8 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
     public final CrafterInventory inventory;
     private final LazyOptional<IItemHandler> inventoryProvider;
 
-    public ContainerData dataAccess;
     public final NonNullList<CrafterRecipe> recipes;
-    public int selected = 0;
+    public byte selected = 0;
 
     public CrafterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -44,33 +44,14 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
         this.inventoryProvider = LazyOptional.of(() -> this.inventory);
 
         this.recipes = NonNullListFactory.fill(9, CrafterRecipe::new);
-
-        this.dataAccess = new ContainerData() {
-            @Override
-            public int get(int i) {
-                return switch (i) {
-                    case 0 -> CrafterBlockEntity.this.selected;
-                    default -> 0;
-                };
-            }
-
-            @Override
-            public void set(int i, int i1) {
-                switch (i) {
-                    case 0 -> CrafterBlockEntity.this.select(i1);
-                }
-            }
-
-            @Override
-            public int getCount() {
-                return 1;
-            }
-        };
     }
 
-    public void select(int index) {
+    public void select(byte index) {
         if (this.selected == index) {
             return;
+        }
+        if (!this.getLevel().isClientSide()) {
+            System.out.println(index);
         }
         this.selected = index;
         CrafterRecipe crafterRecipe = this.recipes.get(index);
@@ -82,7 +63,7 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
     }
 
     public void saveRecipe(CraftingRecipe recipe, List<ItemStack> items, ItemStack output) {
-        CrafterRecipe crafterRecipe = this.recipes.get(this.dataAccess.get(0));
+        CrafterRecipe crafterRecipe = this.recipes.get(this.selected);
 
         crafterRecipe.setCraftingGrid(items, output);
         crafterRecipe.setRecipe(recipe);
@@ -91,7 +72,7 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
     }
 
     public void clearRecipe(List<ItemStack> items) {
-        CrafterRecipe crafterRecipe = this.recipes.get(this.dataAccess.get(0));
+        CrafterRecipe crafterRecipe = this.recipes.get(this.selected);
 
         crafterRecipe.setCraftingGrid(items, ItemStack.EMPTY);
         crafterRecipe.setRecipe(null);
@@ -124,19 +105,35 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
     @Override
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
-        tag.put("inventory", this.inventory.serializeNBT());
-    }
+        tag.put("Inventory", this.inventory.serializeNBT());
+        tag.putByte("SelectedRecipe", this.selected);
 
-    @Override
-    public void writeSafe(CompoundTag tag) {
-        super.writeSafe(tag);
-//        tag.put("inventory", this.inventory.serializeNBT());
+        // Recipes
+        ListTag recipes = new ListTag();
+        for (CrafterRecipe crafterRecipe : this.recipes) {
+            CompoundTag recipeTag = new CompoundTag();
+            recipeTag.put("Recipe", crafterRecipe.serializeNBT());
+            recipes.add(recipeTag);
+        }
+        tag.put("Recipes", recipes);
     }
 
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        this.inventory.deserializeNBT(tag.getCompound("inventory"));
+        this.inventory.deserializeNBT(tag.getCompound("Inventory"));
+        this.selected = tag.getByte("SelectedRecipe");
+
+        // Recipes
+        ListTag recipes = tag.getList("Recipes", Tag.TAG_COMPOUND);
+        for (int i = 0; i < recipes.size(); i++) {
+            CompoundTag recipeTag = recipes.getCompound(i);
+            this.recipes.get(i).deserializeNBT(recipeTag.getCompound("Recipe"));
+        }
+    }
+
+    private void clearRecipes() {
+        this.recipes.replaceAll(crafterRecipe -> new CrafterRecipe());
     }
 
     @Override

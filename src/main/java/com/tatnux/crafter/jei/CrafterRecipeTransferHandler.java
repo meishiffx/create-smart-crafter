@@ -63,7 +63,7 @@ public class CrafterRecipeTransferHandler implements IRecipeTransferHandler<Craf
                     }
                 }
             }
-            container.transferRecipe(items);
+//            container.transferRecipe(items);
             NetworkHandler.sendRecipeToServer(new PacketSendRecipe(items));
         }
 

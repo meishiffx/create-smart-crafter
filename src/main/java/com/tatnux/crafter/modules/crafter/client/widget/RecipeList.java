@@ -26,7 +26,7 @@ public class RecipeList extends AbstractSimiWidget {
 
     public void init() {
         int lineHeight = this.getHeight() / SIZE;
-        for (int i = 0; i < SIZE; i++) {
+        for (byte i = 0; i < SIZE; i++) {
             RecipeEntry recipeEntry = new RecipeEntry(this.parent,
                     i,
                     this.getX(),

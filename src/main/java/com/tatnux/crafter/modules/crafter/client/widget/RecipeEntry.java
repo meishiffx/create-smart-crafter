@@ -3,6 +3,7 @@ package com.tatnux.crafter.modules.crafter.client.widget;
 import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
 import com.tatnux.crafter.modules.crafter.client.CrafterScreen;
 import com.tatnux.crafter.modules.crafter.data.CrafterRecipe;
+import com.tatnux.crafter.modules.network.NetworkHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.NonNullList;
@@ -16,10 +17,10 @@ public class RecipeEntry extends AbstractSimiWidget {
 
     public static final int HOVER_COLOR = new Color(130, 143, 143).getRGB();
 
-    public int index;
+    public byte index;
     private final CrafterScreen parent;
 
-    protected RecipeEntry(CrafterScreen parent, int index, int x, int y, int width, int height) {
+    protected RecipeEntry(CrafterScreen parent, byte index, int x, int y, int width, int height) {
         super(x, y, width, height);
         this.parent = parent;
         this.index = index;
@@ -29,7 +30,7 @@ public class RecipeEntry extends AbstractSimiWidget {
     @Override
     protected void doRender(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         int color = -1;
-        if (this.parent.getMenu().contentHolder.dataAccess.get(0) == this.index) {
+        if (this.parent.getMenu().contentHolder.selected == this.index) {
             color = Color.BLUE.getRGB();
         } else if (this.isMouseOver(mouseX, mouseY)) {
             color = HOVER_COLOR;
@@ -66,6 +67,6 @@ public class RecipeEntry extends AbstractSimiWidget {
 
     @Override
     public void onClick(double mouseX, double mouseY) {
-        this.parent.getMenu().contentHolder.dataAccess.set(0, this.index);
+        NetworkHandler.selectSlot(this.index);
     }
 }

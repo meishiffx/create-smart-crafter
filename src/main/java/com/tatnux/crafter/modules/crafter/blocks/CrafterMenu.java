@@ -15,7 +15,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.*;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -31,21 +34,13 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
     public static final int RESULT_SLOT = 28;
 
     private final CraftingContainer workInventory = new WorkingCraftingInventory();
-    private final ContainerData data;
 
     public CrafterMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
-        this.data = new SimpleContainerData(1);
     }
 
     public CrafterMenu(MenuType<?> type, int id, Inventory inv, CrafterBlockEntity be) {
         super(type, id, inv, be);
-        this.data = be.dataAccess;
-
-    }
-
-    @Override
-    protected void initAndReadInventory(CrafterBlockEntity contentHolder) {
 
     }
 
@@ -80,7 +75,6 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
             this.addSlots(itemHandler, ResultSlot::new, RESULT_SLOT, 38, 80, 2, 2);
         });
         this.addPlayerSlots(58, 167);
-        addDataSlots(this.data);
     }
 
     private void addSlots(IItemHandler itemHandler, SlotItemHandlerFactory factory, int index, int x, int y, int row, int col) {
@@ -89,9 +83,13 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
                 this.addSlot(factory.on(itemHandler, index + iCol + iRow * col, x + iCol * 18, y + iRow * 18));
     }
 
+
+    @Override
+    protected void initAndReadInventory(CrafterBlockEntity contentHolder) {
+    }
+
     @Override
     protected void saveData(CrafterBlockEntity contentHolder) {
-
     }
 
     @Override
@@ -129,6 +127,9 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
     }
 
     private void updateWorkInventory() {
+        if (this.contentHolder.getLevel().isClientSide) {
+            return;
+        }
         for (int i = 0; i < 9; i++) {
             this.workInventory.setItem(i, this.contentHolder.inventory.getStackInSlot(i + CRAFT_SLOT_START));
         }
@@ -163,6 +164,6 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
             this.contentHolder.inventory.setStackInSlot(CRAFT_SLOT_START + i - 1, stacks.get(i));
         }
         this.updateWorkInventory();
-        this.broadcastChanges();
+        this.contentHolder.setChanged();
     }
 }
