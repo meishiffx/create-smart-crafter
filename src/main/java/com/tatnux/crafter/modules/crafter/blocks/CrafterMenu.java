@@ -3,6 +3,7 @@ package com.tatnux.crafter.modules.crafter.blocks;
 import com.simibubi.create.foundation.gui.menu.MenuBase;
 import com.tatnux.crafter.lib.menu.SlotItemHandlerFactory;
 import com.tatnux.crafter.modules.crafter.CrafterModule;
+import com.tatnux.crafter.modules.crafter.blocks.inventory.WorkingCraftingInventory;
 import com.tatnux.crafter.modules.crafter.blocks.slots.InfoSlot;
 import com.tatnux.crafter.modules.crafter.blocks.slots.ResultSlot;
 import com.tatnux.crafter.modules.crafter.data.CrafterRecipe;
@@ -24,30 +25,22 @@ import org.jetbrains.annotations.NotNull;
 
 public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
 
-    private final CraftingContainer workInventory = new TransientCraftingContainer(new AbstractContainerMenu(null, -1) {
-        @SuppressWarnings("NullableProblems")
-        @Override
-        public boolean stillValid(Player var1) {
-            return false;
-        }
+    public static final int CRAFT_RESULT_SLOT = 0;
+    public static final int CRAFT_SLOT_START = 1;
+    public static final int CONTAINER_START = 10;
+    public static final int RESULT_SLOT = 28;
 
-        @Override
-        public ItemStack quickMoveStack(Player player, int slot) {
-            return ItemStack.EMPTY;
-        }
-    }, 3, 3);
-
-    private static final int CRAFT_RESULT_SLOT = 0;
-    private static final int CRAFT_SLOT_START = 1;
-    private static final int CONTAINER_START = 10;
-    private static final int RESULT_SLOT = 28;
+    private final CraftingContainer workInventory = new WorkingCraftingInventory();
+    private final ContainerData data;
 
     public CrafterMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
+        this.data = new SimpleContainerData(1);
     }
 
     public CrafterMenu(MenuType<?> type, int id, Inventory inv, CrafterBlockEntity be) {
         super(type, id, inv, be);
+        this.data = be.dataAccess;
 
     }
 
@@ -87,6 +80,7 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
             this.addSlots(itemHandler, ResultSlot::new, RESULT_SLOT, 38, 80, 2, 2);
         });
         this.addPlayerSlots(58, 167);
+        addDataSlots(this.data);
     }
 
     private void addSlots(IItemHandler itemHandler, SlotItemHandlerFactory factory, int index, int x, int y, int row, int col) {
@@ -140,8 +134,8 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
         }
         CrafterRecipe.findRecipe(this.contentHolder.getLevel(), this.workInventory).ifPresentOrElse(recipe -> {
             ItemStack result = recipe.assemble(this.workInventory, this.contentHolder.getLevel().registryAccess());
-            this.contentHolder.inventory.setStackInSlot(CRAFT_RESULT_SLOT, result);
-        }, () -> this.contentHolder.inventory.setStackInSlot(CRAFT_RESULT_SLOT, ItemStack.EMPTY));
+            this.contentHolder.saveRecipe(recipe, this.workInventory.getItems(), result);
+        }, () -> this.contentHolder.clearRecipe(this.workInventory.getItems()));
     }
 
     @Override

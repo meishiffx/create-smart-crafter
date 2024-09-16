@@ -44,11 +44,18 @@ public class RecipeList extends AbstractSimiWidget {
         if (delta > 0 && this.scrollOffset > 0) {
             this.scrollOffset--; // Scroll vers le haut
             this.entries.forEach(recipeEntry -> recipeEntry.index--);
-        } else if (delta < 0 && this.scrollOffset < this.parent.recipes.size() - SIZE) {
+        } else if (delta < 0 && this.scrollOffset < this.parent.getMenu().contentHolder.recipes.size() - SIZE) {
             this.entries.forEach(recipeEntry -> recipeEntry.index++);
             this.scrollOffset++; // Scroll vers le bas
         }
         return true; // Scroll géré
+    }
+
+    @Override
+    public void onClick(double mouseX, double mouseY) {
+        entries.stream().filter(recipeEntry -> recipeEntry.isMouseOver(mouseX, mouseY)).forEach(recipeEntry -> {
+            recipeEntry.onClick(mouseX, mouseY);
+        });
     }
 
     @Override

@@ -3,12 +3,13 @@ package com.tatnux.crafter.modules.crafter.client;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
+import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.tatnux.crafter.jei.PacketSendRecipe;
 import com.tatnux.crafter.lib.gui.GuiTexture;
+import com.tatnux.crafter.lib.gui.WidgetBox;
 import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
 import com.tatnux.crafter.modules.crafter.client.widget.RecipeList;
-import com.tatnux.crafter.modules.crafter.data.CrafterRecipe;
 import com.tatnux.crafter.modules.network.NetworkHandler;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
@@ -26,10 +27,9 @@ import static com.simibubi.create.foundation.gui.AllGuiTextures.PLAYER_INVENTORY
 
 public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
 
+    public static final int BOX_COLOR = new Color(50, 100, 181).getRGB();
     protected static final GuiTexture BG = GuiTexture.CRAFTER;
     protected static final AllGuiTextures PLAYER = AllGuiTextures.PLAYER_INVENTORY;
-
-    public final NonNullList<CrafterRecipe> recipes = NonNullList.withSize(9, new CrafterRecipe());
 
     public CrafterScreen(CrafterMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -49,13 +49,17 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
                     this.minecraft.player.closeContainer();
                 }));
 
-        this.addRenderableWidget(new IconButton(
+        AbstractSimiWidget resetButton = new IconButton(
                 this.leftPos + 185,
                 this.topPos + 56,
                 AllIcons.I_TRASH)
                 .withCallback(() -> {
-                    NetworkHandler.sendRecipeToServer(PacketSendRecipe.create(NonNullList.withSize(10, ItemStack.EMPTY)));
-                }));
+                    NonNullList<ItemStack> items = NonNullList.withSize(10, ItemStack.EMPTY);
+                    this.getMenu().transferRecipe(items);
+                    NetworkHandler.sendRecipeToServer(PacketSendRecipe.create(items));
+                });
+        this.addRenderableWidget(resetButton);
+        this.addRenderableWidget(new WidgetBox(resetButton, BOX_COLOR));
 
 
         RecipeList recipeList = new RecipeList(this, this.leftPos + 38, this.topPos - 2, 110, 75);

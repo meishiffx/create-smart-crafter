@@ -5,6 +5,7 @@ import com.tatnux.crafter.modules.crafter.client.CrafterScreen;
 import com.tatnux.crafter.modules.crafter.data.CrafterRecipe;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -27,12 +28,25 @@ public class RecipeEntry extends AbstractSimiWidget {
 
     @Override
     protected void doRender(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        boolean mouseOver = isMouseOver(mouseX, mouseY);
-        if (mouseOver || this.index % 2 == 0) {
-            graphics.fill(this.getX(), this.getY(), this.getX() + this.getWidth(), this.getY() + this.getHeight(), mouseOver ? HOVER_COLOR : Color.GRAY.getRGB());
+        int color = -1;
+        if (this.parent.getMenu().contentHolder.dataAccess.get(0) == this.index) {
+            color = Color.BLUE.getRGB();
+        } else if (this.isMouseOver(mouseX, mouseY)) {
+            color = HOVER_COLOR;
+        } else if (this.index % 2 == 0) {
+            color = Color.GRAY.getRGB();
         }
 
-        CrafterRecipe recipe = this.parent.recipes.get(this.index);
+        if (color != -1) {
+            graphics.fill(this.getX(), this.getY(), this.getX() + this.getWidth(), this.getY() + this.getHeight(), color);
+        }
+
+        NonNullList<CrafterRecipe> recipes = this.parent.getMenu().contentHolder.recipes;
+        if (recipes == null || this.index >= recipes.size()) {
+            return;
+        }
+
+        CrafterRecipe recipe = recipes.get(this.index);
         ItemStack output = recipe.getOutput();
         graphics.enableScissor(this.getX(), this.getY(), this.getX() + this.getWidth() - 1, this.getY() + this.getHeight());
 
@@ -48,5 +62,10 @@ public class RecipeEntry extends AbstractSimiWidget {
                 false);
 
         graphics.disableScissor();
+    }
+
+    @Override
+    public void onClick(double mouseX, double mouseY) {
+        this.parent.getMenu().contentHolder.dataAccess.set(0, this.index);
     }
 }
