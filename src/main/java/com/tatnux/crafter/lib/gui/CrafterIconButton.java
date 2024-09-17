@@ -82,9 +82,7 @@ public class CrafterIconButton extends IconButton {
     }
 
     @Override
-    public void onClick(double mouseX, double mouseY) {
-        if (!this.disabledState) {
-            super.onClick(mouseX, mouseY);
-        }
+    protected boolean clicked(double pMouseX, double pMouseY) {
+        return !this.disabledState && super.clicked(pMouseX, pMouseY);
     }
 }

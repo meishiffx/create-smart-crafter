@@ -1,25 +1,38 @@
 package com.tatnux.crafter.modules.crafter.client;
 
+import com.jozufozu.flywheel.util.transform.TransformStack;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
+import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
+import com.simibubi.create.foundation.gui.element.GuiGameElement;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.tatnux.crafter.lib.gui.CrafterIconButton;
 import com.tatnux.crafter.lib.gui.GuiTexture;
 import com.tatnux.crafter.lib.gui.WidgetBox;
+import com.tatnux.crafter.modules.crafter.CrafterModule;
 import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
 import com.tatnux.crafter.modules.crafter.client.widget.RecipeList;
 import com.tatnux.crafter.modules.crafter.data.CraftMode;
 import com.tatnux.crafter.modules.crafter.data.CrafterRecipe;
+import com.tatnux.crafter.modules.crafter.data.GhostSlots;
 import com.tatnux.crafter.modules.network.NetworkHandler;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 
 import java.awt.*;
 
@@ -154,6 +167,90 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
         int invX = this.getLeftOfCentered(PLAYER_INVENTORY.width);
         int invY = this.topPos + this.imageHeight - PLAYER.height;
         this.renderPlayerInventory(graphics, invX, invY);
+        this.renderCrafter(graphics, x + BG.width + 55, y + BG.height + 15, partialTicks);
+        this.drawGhostSlots(graphics);
+    }
+
+    private void renderCrafter(GuiGraphics graphics, int x, int y, float partialTicks) {
+        PoseStack ms = graphics.pose();
+        TransformStack.cast(ms)
+                .pushPose()
+                .translate(x, y, 100)
+                .scale(50)
+                .rotateX(-22)
+                .rotateY(-202);
+
+        GuiGameElement.of(CrafterModule.CRAFTER
+                        .getDefaultState())
+                .render(graphics);
+
+        TransformStack.cast(ms)
+                .pushPose();
+        GuiGameElement.of(AllPartialModels.SHAFTLESS_COGWHEEL)
+                .rotateBlock(90, this.menu.contentHolder.getSpeed() > 0 ? partialTicks * -180 : 22, 0)
+                .render(graphics);
+        ms.popPose();
+        ms.popPose();
+    }
+
+    private void drawGhostSlots(GuiGraphics graphics) {
+        com.mojang.blaze3d.platform.Lighting.setupFor3DItems();
+        PoseStack matrixStack = graphics.pose();
+        matrixStack.pushPose();
+        matrixStack.translate(this.leftPos, this.topPos, 100.0F);
+
+        GhostSlots ghostSlots = this.menu.contentHolder.ghostSlots;
+        GlStateManager._enableDepthTest();
+        GlStateManager._disableBlend();
+
+
+        for (GhostSlots.GhostSlotEntry entry : ghostSlots.getEntries()) {
+            ItemStack item = entry.getItem();
+            if (!item.isEmpty()) {
+                for (Byte slotIndex : entry.getSlots()) {
+                    Slot slot = this.menu.getSlot(slotIndex);
+                    if (!slot.hasItem()) {
+                        renderGhostItem(graphics, item, slot);
+                    }
+                }
+            }
+        }
+
+        matrixStack.popPose();
+    }
+
+    private static void renderGhostItem(GuiGraphics graphics, ItemStack stack, Slot slot) {
+        renderAndDecorateItem(graphics, stack, slot.x, slot.y);
+
+//                    RenderSystem.disableLighting();// @todo 1.18
+        RenderSystem.enableBlend();
+        RenderSystem.disableDepthTest();
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderTexture(0, PLAYER_INVENTORY.location);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.5F);
+        drawTexturedModalRect(graphics.pose(), slot.x, slot.y, 8, 18, 16, 16);
+        RenderSystem.enableDepthTest();
+        RenderSystem.disableBlend();
+    }
+
+    public static void renderAndDecorateItem(GuiGraphics graphics, ItemStack stack, int x, int y) {
+        graphics.renderItem(stack, x, y, x * y * 31);
+        graphics.renderItemDecorations(Minecraft.getInstance().font, stack, x, y, null);
+    }
+
+    public static void drawTexturedModalRect(PoseStack poseStack, int x, int y, int u, int v, int width, int height) {
+        Matrix4f matrix = poseStack.last().pose();
+        float zLevel = 0.01F;
+        float f = 0.00390625F;
+        float f1 = 0.00390625F;
+        Tesselator tessellator = Tesselator.getInstance();
+        BufferBuilder buffer = tessellator.getBuilder();
+        buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        buffer.vertex(matrix, (float) (x), (float) (y + height), zLevel).uv((float) (u) * f, (float) (v + height) * f1).endVertex();
+        buffer.vertex(matrix, (float) (x + width), (float) (y + height), zLevel).uv((float) (u + width) * f, (float) (v + height) * f1).endVertex();
+        buffer.vertex(matrix, (float) (x + width), (float) (y), zLevel).uv((float) (u + width) * f, (float) (v) * f1).endVertex();
+        buffer.vertex(matrix, (float) (x), (float) (y), zLevel).uv((float) (u) * f, (float) (v) * f1).endVertex();
+        tessellator.end();
     }
 
     private void updateCraftMode(CraftMode mode) {

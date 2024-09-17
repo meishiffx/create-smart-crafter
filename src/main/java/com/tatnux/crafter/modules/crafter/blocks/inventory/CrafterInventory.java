@@ -38,6 +38,11 @@ public class CrafterInventory extends ItemStackHandler implements ItemValidator 
     }
 
     @Override
+    public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+        return this.isItemValidForSlot(slot, stack);
+    }
+
+    @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return this.blockEntity.isItemValidForSlot(slot, stack);
     }

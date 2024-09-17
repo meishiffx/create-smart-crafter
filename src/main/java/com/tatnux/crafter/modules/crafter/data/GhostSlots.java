@@ -1,6 +1,7 @@
 package com.tatnux.crafter.modules.crafter.data;
 
 import lombok.Data;
+import lombok.Getter;
 import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -12,6 +13,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+@Getter
 public class GhostSlots implements INBTSerializable<ListTag> {
 
     private final Set<GhostSlotEntry> entries = new HashSet<>();
@@ -68,7 +70,6 @@ public class GhostSlots implements INBTSerializable<ListTag> {
         }
 
         public GhostSlotEntry(CompoundTag tag) {
-            this.item = ItemStack.EMPTY.copy();
             this.deserializeNBT(tag);
         }
 
@@ -82,7 +83,7 @@ public class GhostSlots implements INBTSerializable<ListTag> {
 
         @Override
         public void deserializeNBT(CompoundTag compoundTag) {
-            this.item.deserializeNBT(compoundTag.getCompound("Item"));
+            this.item = ItemStack.of(compoundTag.getCompound("Item"));
             this.slots.clear();
             for (byte b : compoundTag.getByteArray("Slots")) {
                 this.slots.add(b);

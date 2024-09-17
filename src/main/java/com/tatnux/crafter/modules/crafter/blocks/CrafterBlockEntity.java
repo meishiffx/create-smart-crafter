@@ -1,7 +1,6 @@
 package com.tatnux.crafter.modules.crafter.blocks;
 
-import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
-import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.tatnux.crafter.lib.list.NonNullListFactory;
 import com.tatnux.crafter.lib.menu.InventoryTools;
 import com.tatnux.crafter.lib.menu.UndoableItemHandler;
@@ -44,7 +43,7 @@ import static com.tatnux.crafter.modules.crafter.blocks.CrafterMenu.*;
 import static com.tatnux.crafter.modules.crafter.data.CraftMode.EXTC;
 import static com.tatnux.crafter.modules.crafter.data.CraftMode.INT;
 
-public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider {
+public class CrafterBlockEntity extends KineticBlockEntity implements MenuProvider {
 
     public final CrafterInventory inventory;
     private final AutomationInventory automationInventory;
@@ -56,6 +55,7 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
     public boolean keepMode = false;
     public GhostSlots ghostSlots;
     private final CraftingContainer workInventory = new WorkingCraftingInventory();
+    private int progress = 0;
 
     public CrafterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -132,14 +132,10 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
     }
 
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        if (slot >= CONTAINER_START && slot < CONTAINER_START + CONTAINER_SIZE) {
+        if (slot >= CONTAINER_START && slot < RESULT_SLOT_START + RESULT_SLOT_SIZE) {
             return this.ghostSlots.mayPlace((byte) slot, stack);
         }
         return true;
-    }
-
-    @Override
-    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
     }
 
     @Override
@@ -168,11 +164,15 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
 
     @Override
     public void tick() {
+        super.tick();
         if (this.level.isClientSide()) {
             return;
         }
-
-        this.craftOneCycle();
+        this.progress += (int) (this.getSpeed() * (this.getSpeed() / 2)) + 200;
+        if (this.progress > 33768) {
+            this.craftOneCycle();
+            this.progress = 0;
+        }
     }
 
     private boolean craftOneCycle() {
