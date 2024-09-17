@@ -100,9 +100,12 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
             super.clicked(slotId, dragType, clickTypeIn, player);
             return;
         }
+
+        // Crafting Grid Slots handling
         if (clickTypeIn == ClickType.THROW)
             return;
 
+        // Creative Mode
         ItemStack held = this.getCarried();
         if (clickTypeIn == ClickType.CLONE) {
             if (player.isCreative() && held.isEmpty()) {
@@ -117,14 +120,17 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
 
         ItemStack insert;
         if (held.isEmpty()) {
+            // This will destroy the item
             insert = ItemStack.EMPTY;
         } else {
+            // This will create a new item from the held item
             insert = held.copy();
             insert.setCount(1);
         }
         this.contentHolder.inventory.setStackInSlot(slotId, insert);
         this.getSlot(slotId).setChanged();
 
+        // This will update and search for a recipe or delete the current recipe
         this.contentHolder.updateWorkInventory();
     }
 
@@ -164,7 +170,8 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
     }
 
     @Override
-    public boolean canTakeItemForPickAll(ItemStack pStack, Slot pSlot) {
+    public boolean canTakeItemForPickAll(@NotNull ItemStack stack, Slot pSlot) {
+        // Avoid CraftingGrid and CraftingResult items to be taken
         return pSlot.container == this.playerInventory || pSlot.index >= CONTAINER_START;
     }
 
@@ -173,10 +180,13 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
             return;
         }
 
+        // Update the inventory
         this.contentHolder.inventory.setStackInSlot(CRAFT_RESULT_SLOT, stacks.get(0));
         for (int i = 1; i < stacks.size(); i++) {
             this.contentHolder.inventory.setStackInSlot(CRAFT_SLOT_START + i - 1, stacks.get(i));
         }
+
+        // Test recipe and save
         this.contentHolder.updateWorkInventory();
         this.contentHolder.setChanged();
     }

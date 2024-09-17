@@ -56,10 +56,12 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
                     this.minecraft.player.closeContainer();
                 }));
 
-        this.resetButton = new IconButton(
+        this.resetButton = new CrafterIconButton(
                 this.leftPos + 185,
                 this.topPos + 56,
                 AllIcons.I_TRASH)
+                .withTooltip(Component.literal("Reset the recipe"))
+                .withDisabled(() -> this.menu.contentHolder.isCraftingEmpty())
                 .withCallback(() -> {
                     NonNullList<ItemStack> items = NonNullList.withSize(10, ItemStack.EMPTY);
                     NetworkHandler.sendRecipeToServer(PacketSendRecipe.create(items));

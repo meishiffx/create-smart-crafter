@@ -35,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import static com.tatnux.crafter.modules.crafter.blocks.CrafterMenu.CRAFT_RESULT_SLOT;
 import static com.tatnux.crafter.modules.crafter.blocks.CrafterMenu.CRAFT_SLOT_START;
@@ -60,10 +61,14 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
         this.recipes = NonNullListFactory.fill(9, CrafterRecipe::new);
     }
 
+    /// From Client
     public void select(byte index) {
+        // Already selected, return
         if (this.selected == index) {
             return;
         }
+
+        // The recipe is already cached so we just have to update the inventory
         this.selected = index;
         CrafterRecipe crafterRecipe = this.recipes.get(index);
         this.inventory.setStackInSlot(CRAFT_RESULT_SLOT, crafterRecipe.getOutput());
@@ -72,18 +77,20 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
         }
     }
 
-    public CrafterRecipe getSelectedRecipe() {
-        return this.recipes.get(this.selected);
-    }
-
+    // From Client
     public void setCraftMode(CraftMode mode) {
         this.getSelectedRecipe().setCraftMode(mode);
         this.notifyUpdate();
     }
 
+    // From Client
     public void setKeepMode(boolean keep) {
         this.keepMode = keep;
         this.notifyUpdate();
+    }
+
+    public CrafterRecipe getSelectedRecipe() {
+        return this.recipes.get(this.selected);
     }
 
     public void saveRecipe(CraftingRecipe recipe, List<ItemStack> items, ItemStack output) {
@@ -91,13 +98,6 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
         this.getSelectedRecipe().setRecipe(recipe);
 
         this.inventory.setStackInSlot(CRAFT_RESULT_SLOT, output);
-    }
-
-    public void clearRecipe(List<ItemStack> items) {
-        this.getSelectedRecipe().setCraftingGrid(items, ItemStack.EMPTY);
-        this.getSelectedRecipe().setRecipe(null);
-
-        this.inventory.setStackInSlot(CRAFT_RESULT_SLOT, ItemStack.EMPTY);
     }
 
     @Override
@@ -143,6 +143,7 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
 
     private boolean craftRecipe(CrafterRecipe recipe) {
         Optional<CraftingRecipe> optionalCraftingRecipe = recipe.getCachedRecipe(this.level);
+        // If the current recipe has no recipe, return
         if (optionalCraftingRecipe.isEmpty()) {
             return false;
         }
@@ -180,7 +181,7 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
     }
 
     private boolean testAndConsume(CrafterRecipe crafterRecipe, UndoableItemHandler undoHandler) {
-        int keep = this.keepMode ? 1 : 0;
+        int keep = this.keepMode ? 1 : 0; //The number of item that will remain in the container slots
         for (int i = 0; i < this.workInventory.getContainerSize(); i++) {
             this.workInventory.setItem(i, ItemStack.EMPTY);
         }
@@ -224,6 +225,7 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
     private boolean placeResult(CraftMode mode, IItemHandlerModifiable undoHandler, ItemStack result) {
         int start;
         int stop;
+        // Set the target container slots depending on the current mode
         if (mode == INT) {
             start = CrafterMenu.CONTAINER_START;
             stop = CrafterMenu.CONTAINER_START + CrafterMenu.CONTAINER_SIZE;
@@ -231,11 +233,14 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
             start = CrafterMenu.RESULT_SLOT_START;
             stop = CrafterMenu.RESULT_SLOT_START + CrafterMenu.RESULT_SLOT_SIZE;
         }
+        // Test if the operation is ok
         ItemStack remaining = InventoryTools.insertItemRanged(undoHandler, result, start, stop, true);
         if (remaining.isEmpty()) {
+            // Same method but for real (not simulated)
             InventoryTools.insertItemRanged(undoHandler, result, start, stop, false);
             return true;
         }
+        // Here we would have items left
         return false;
     }
 
@@ -243,45 +248,55 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
         if (this.getLevel().isClientSide) {
             return;
         }
+        // Update the work inventory and try to find a recipe
         for (int i = 0; i < 9; i++) {
             this.workInventory.setItem(i, this.inventory.getStackInSlot(i + CRAFT_SLOT_START));
         }
         CrafterRecipe.findRecipe(this.getLevel(), this.workInventory).ifPresentOrElse(recipe -> {
             ItemStack result = recipe.assemble(this.workInventory, this.getLevel().registryAccess());
             this.saveRecipe(recipe, this.workInventory.getItems(), result);
-        }, () -> this.clearRecipe(this.workInventory.getItems()));
+        }, () -> this.saveRecipe(null, this.workInventory.getItems(), ItemStack.EMPTY)); // If no recipe was found, reset the recipe to empty
+    }
+
+    /**
+     * Checks every item between slot 0 and slot 10 and returns true is they are all empty
+     * @return true if the CraftingGrid and the CraftingResult are empty
+     */
+    public boolean isCraftingEmpty() {
+        return IntStream.of(10)
+                .allMatch(value -> this.inventory.getStackInSlot(value).isEmpty());
     }
 
 
     @Override
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
-        tag.put("Inventory", this.inventory.serializeNBT());
-        tag.putByte("SelectedRecipe", this.selected);
+        tag.put("Inventory", this.inventory.serializeNBT()); // Inventory
+        tag.putByte("SelectedRecipe", this.selected); // SelectedRecipe
 
-        // Recipes
+        // Create the recipe list
         ListTag recipes = new ListTag();
         for (CrafterRecipe crafterRecipe : this.recipes) {
             CompoundTag recipeTag = new CompoundTag();
             recipeTag.put("Recipe", crafterRecipe.serializeNBT());
             recipes.add(recipeTag);
         }
-        tag.put("Recipes", recipes);
-        tag.putBoolean("KeepMode", this.keepMode);
+        tag.put("Recipes", recipes); // Recipes
+        tag.putBoolean("KeepMode", this.keepMode); // KeepMode
     }
 
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        this.inventory.deserializeNBT(tag.getCompound("Inventory"));
-        this.selected = tag.getByte("SelectedRecipe");
+        this.inventory.deserializeNBT(tag.getCompound("Inventory")); // Inventory
+        this.selected = tag.getByte("SelectedRecipe"); // SelectedRecipe
 
-        // Recipes
-        ListTag recipes = tag.getList("Recipes", Tag.TAG_COMPOUND);
+        // Retrieve the recipes list
+        ListTag recipes = tag.getList("Recipes", Tag.TAG_COMPOUND); // Recipes
         for (int i = 0; i < recipes.size(); i++) {
             CompoundTag recipeTag = recipes.getCompound(i);
             this.recipes.get(i).deserializeNBT(recipeTag.getCompound("Recipe"));
         }
-        this.keepMode = tag.getBoolean("KeepMode");
+        this.keepMode = tag.getBoolean("KeepMode"); // KeepMode
     }
 }
