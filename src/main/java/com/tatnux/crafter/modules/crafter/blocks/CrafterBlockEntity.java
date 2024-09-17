@@ -6,10 +6,14 @@ import com.tatnux.crafter.lib.list.NonNullListFactory;
 import com.tatnux.crafter.lib.menu.InventoryTools;
 import com.tatnux.crafter.lib.menu.UndoableItemHandler;
 import com.tatnux.crafter.modules.crafter.CrafterModule;
+import com.tatnux.crafter.modules.crafter.blocks.inventory.AutomationInventory;
+import com.tatnux.crafter.modules.crafter.blocks.inventory.CrafterInventory;
 import com.tatnux.crafter.modules.crafter.blocks.inventory.WorkingCraftingInventory;
 import com.tatnux.crafter.modules.crafter.data.CraftMode;
 import com.tatnux.crafter.modules.crafter.data.CrafterRecipe;
+import com.tatnux.crafter.modules.crafter.data.GhostSlots;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -35,28 +39,31 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
-import static com.tatnux.crafter.modules.crafter.blocks.CrafterMenu.CRAFT_RESULT_SLOT;
-import static com.tatnux.crafter.modules.crafter.blocks.CrafterMenu.CRAFT_SLOT_START;
+import static com.tatnux.crafter.modules.crafter.blocks.CrafterMenu.*;
 import static com.tatnux.crafter.modules.crafter.data.CraftMode.EXTC;
 import static com.tatnux.crafter.modules.crafter.data.CraftMode.INT;
 
 public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider {
 
     public final CrafterInventory inventory;
+    private final AutomationInventory automationInventory;
     private final LazyOptional<IItemHandler> inventoryProvider;
 
     public final NonNullList<CrafterRecipe> recipes;
     public byte selected = 0;
 
     public boolean keepMode = false;
+    public GhostSlots ghostSlots;
     private final CraftingContainer workInventory = new WorkingCraftingInventory();
 
     public CrafterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         this.inventory = new CrafterInventory(this);
-        this.inventoryProvider = LazyOptional.of(() -> this.inventory);
+        this.automationInventory = new AutomationInventory(this.inventory);
+        this.inventoryProvider = LazyOptional.of(() -> this.automationInventory);
+
+        this.ghostSlots = new GhostSlots();
 
         this.recipes = NonNullListFactory.fill(9, CrafterRecipe::new);
     }
@@ -70,11 +77,20 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
 
         // The recipe is already cached so we just have to update the inventory
         this.selected = index;
-        CrafterRecipe crafterRecipe = this.recipes.get(index);
+        CrafterRecipe crafterRecipe = this.getSelectedRecipe();
         this.inventory.setStackInSlot(CRAFT_RESULT_SLOT, crafterRecipe.getOutput());
         for (int i = 0; i < crafterRecipe.getItems().size(); i++) {
             this.inventory.setStackInSlot(CRAFT_SLOT_START + i, crafterRecipe.getItems().get(i));
         }
+    }
+
+    public void reset(byte index) {
+        if (this.selected != index) {
+            // Illegal State
+            return;
+        }
+
+        this.transferRecipe(NonNullList.withSize(10, ItemStack.EMPTY));
     }
 
     // From Client
@@ -100,16 +116,38 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
         this.inventory.setStackInSlot(CRAFT_RESULT_SLOT, output);
     }
 
+    public void updateGhostItems(boolean reset) {
+        if (reset) {
+            this.ghostSlots.clear();
+        } else {
+            for (byte i = CONTAINER_START; i < RESULT_SLOT_START + RESULT_SLOT_SIZE; i++) {
+                ItemStack itemStack = this.inventory.getStackInSlot(i);
+                if (!itemStack.isEmpty()) {
+                    this.ghostSlots.addSlot(itemStack.copyWithCount(1), i);
+                }
+            }
+        }
+        this.notifyUpdate();
+
+    }
+
+    public boolean isItemValidForSlot(int slot, ItemStack stack) {
+        if (slot >= CONTAINER_START && slot < CONTAINER_START + CONTAINER_SIZE) {
+            return this.ghostSlots.mayPlace((byte) slot, stack);
+        }
+        return true;
+    }
+
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
     }
 
     @Override
-    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap) {
+    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
         if (this.isItemHandlerCap(cap)) {
             return this.inventoryProvider.cast();
         }
-        return super.getCapability(cap);
+        return super.getCapability(cap, side);
     }
 
     @Override
@@ -258,13 +296,20 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
         }, () -> this.saveRecipe(null, this.workInventory.getItems(), ItemStack.EMPTY)); // If no recipe was found, reset the recipe to empty
     }
 
-    /**
-     * Checks every item between slot 0 and slot 10 and returns true is they are all empty
-     * @return true if the CraftingGrid and the CraftingResult are empty
-     */
-    public boolean isCraftingEmpty() {
-        return IntStream.of(10)
-                .allMatch(value -> this.inventory.getStackInSlot(value).isEmpty());
+    public void transferRecipe(NonNullList<ItemStack> stacks) {
+        if (stacks.isEmpty()) {
+            return;
+        }
+
+        // Update the inventory
+        this.inventory.setStackInSlot(CRAFT_RESULT_SLOT, stacks.get(0));
+        for (int i = 1; i < stacks.size(); i++) {
+            this.inventory.setStackInSlot(CRAFT_SLOT_START + i - 1, stacks.get(i));
+        }
+
+        // Test recipe and save
+        this.updateWorkInventory();
+        this.setChanged();
     }
 
 
@@ -283,6 +328,7 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
         }
         tag.put("Recipes", recipes); // Recipes
         tag.putBoolean("KeepMode", this.keepMode); // KeepMode
+        tag.put("GhostSlots", this.ghostSlots.serializeNBT()); // GhostSlots
     }
 
     @Override
@@ -298,5 +344,6 @@ public class CrafterBlockEntity extends SmartBlockEntity implements MenuProvider
             this.recipes.get(i).deserializeNBT(recipeTag.getCompound("Recipe"));
         }
         this.keepMode = tag.getBoolean("KeepMode"); // KeepMode
+        this.ghostSlots.deserializeNBT(tag.getList("GhostSlots", Tag.TAG_COMPOUND)); // GhostsSlots
     }
 }

@@ -37,7 +37,7 @@ public class CrafterBlock extends Block implements IBE<CrafterBlockEntity> {
             return InteractionResult.SUCCESS;
         }
 
-        withBlockEntityDo(world, pos,
+        this.withBlockEntityDo(world, pos,
                 crafter -> NetworkHooks.openScreen((ServerPlayer) player, crafter, crafter::sendToMenu));
         return InteractionResult.SUCCESS;
     }
@@ -51,4 +51,5 @@ public class CrafterBlock extends Block implements IBE<CrafterBlockEntity> {
     public BlockEntityType<? extends CrafterBlockEntity> getBlockEntityType() {
         return CrafterModule.CRAFTER_BLOCK_ENTITY.get();
     }
+
 }

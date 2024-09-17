@@ -28,6 +28,7 @@ public class CrafterModule implements IModule {
 
     public static final BlockEntityEntry<CrafterBlockEntity> CRAFTER_BLOCK_ENTITY = REGISTRATE
             .blockEntity("crafter", CrafterBlockEntity::new)
+//            .instance(() -> CrafterInstance::new, false)
             .validBlocks(CRAFTER)
             .register();
 

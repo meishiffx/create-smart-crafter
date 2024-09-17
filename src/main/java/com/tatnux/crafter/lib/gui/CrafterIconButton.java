@@ -16,8 +16,12 @@ public class CrafterIconButton extends IconButton {
 
     private Supplier<Boolean> disabled = () -> false;
 
+    private boolean disabledState = false;
+
     private Component tooltip;
     private Component[] description;
+
+    private boolean tooltipWhenDisabled = true;
 
     public CrafterIconButton(int x, int y, ScreenElement icon) {
         super(x, y, icon);
@@ -33,6 +37,11 @@ public class CrafterIconButton extends IconButton {
         return this;
     }
 
+    public CrafterIconButton tooltipWhenDisabled(boolean tooltipWhenDisabled) {
+        this.tooltipWhenDisabled = tooltipWhenDisabled;
+        return this;
+    }
+
     public CrafterIconButton withDescription(Component... description) {
         this.description = description;
         return this;
@@ -40,16 +49,18 @@ public class CrafterIconButton extends IconButton {
 
     @Override
     public void tick() {
-        if (Objects.nonNull(tooltip)) {
+        if (Objects.nonNull(this.tooltip)) {
             this.getToolTip().clear();
-            this.getToolTip().add(tooltip);
-            if (Objects.nonNull(description)) {
-                if(Screen.hasShiftDown()) {
-                    for (Component component : description) {
-                        this.getToolTip().add(component);
+            if (this.tooltipWhenDisabled || !this.disabledState) {
+                this.getToolTip().add(this.tooltip);
+                if (Objects.nonNull(this.description)) {
+                    if (Screen.hasShiftDown()) {
+                        for (Component component : this.description) {
+                            this.getToolTip().add(component);
+                        }
+                    } else {
+                        this.getToolTip().add(TooltipHelper.holdShift(TooltipHelper.Palette.YELLOW, Screen.hasShiftDown()));
                     }
-                } else {
-                    this.getToolTip().add(TooltipHelper.holdShift(TooltipHelper.Palette.YELLOW, Screen.hasShiftDown()));
                 }
             }
         }
@@ -58,14 +69,22 @@ public class CrafterIconButton extends IconButton {
     @Override
     public void doRender(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         if (this.visible) {
+            this.disabledState = this.disabled.get();
             this.isHovered = mouseX >= this.getX() && mouseY >= this.getY() && mouseX < this.getX() + this.width && mouseY < this.getY() + this.height;
 
-            AllGuiTextures button = this.disabled.get() ? AllGuiTextures.BUTTON_DOWN
+            AllGuiTextures button = this.disabledState ? AllGuiTextures.BUTTON_DOWN
                     : this.isMouseOver(mouseX, mouseY) ? AllGuiTextures.BUTTON_HOVER : AllGuiTextures.BUTTON;
 
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             this.drawBg(graphics, button);
             this.icon.render(graphics, this.getX() + 1, this.getY() + 1);
+        }
+    }
+
+    @Override
+    public void onClick(double mouseX, double mouseY) {
+        if (!this.disabledState) {
+            super.onClick(mouseX, mouseY);
         }
     }
 }

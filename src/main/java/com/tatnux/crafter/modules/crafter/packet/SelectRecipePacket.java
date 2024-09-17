@@ -2,24 +2,24 @@ package com.tatnux.crafter.modules.crafter.packet;
 
 import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
 
-import java.util.Objects;
-import java.util.function.Supplier;
-
-public record SelectRecipePacket(byte slot) implements CrafterPacket {
+public record SelectRecipePacket(byte slot, boolean reset) implements CrafterPacket {
 
     public void write(FriendlyByteBuf friendlyByteBuf) {
-        friendlyByteBuf.writeByte(slot);
+        friendlyByteBuf.writeByte(this.slot);
+        friendlyByteBuf.writeBoolean(this.reset);
     }
 
     public static SelectRecipePacket create(FriendlyByteBuf friendlyByteBuf) {
-        return new SelectRecipePacket(friendlyByteBuf.readByte());
+        return new SelectRecipePacket(friendlyByteBuf.readByte(), friendlyByteBuf.readBoolean());
     }
 
     @Override
     public void handleMenu(CrafterMenu menu) {
-        menu.contentHolder.select(this.slot);
+        if (this.reset) {
+            menu.contentHolder.reset(this.slot);
+        } else {
+            menu.contentHolder.select(this.slot);
+        }
     }
 }

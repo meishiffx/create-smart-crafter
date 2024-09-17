@@ -6,13 +6,7 @@ import com.tatnux.crafter.modules.crafter.packet.CrafterPacket;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.Objects;
-import java.util.function.Supplier;
 
 
 public record PacketSendRecipe(NonNullList<ItemStack> stacks) implements CrafterPacket {
@@ -41,6 +35,6 @@ public record PacketSendRecipe(NonNullList<ItemStack> stacks) implements Crafter
 
     @Override
     public void handleMenu(CrafterMenu menu) {
-        menu.transferRecipe(this.stacks);
+        menu.contentHolder.transferRecipe(this.stacks);
     }
 }

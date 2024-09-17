@@ -1,10 +1,10 @@
 package com.tatnux.crafter.lib.menu;
 
-import net.minecraftforge.items.IItemHandler;
+import com.tatnux.crafter.modules.crafter.blocks.slots.ItemValidator;
 import net.minecraftforge.items.SlotItemHandler;
 
 public interface SlotItemHandlerFactory {
 
-    SlotItemHandler on(IItemHandler itemHandler, int index, int x, int y);
+    SlotItemHandler on(ItemValidator itemHandler, int index, int x, int y);
 
 }

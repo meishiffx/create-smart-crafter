@@ -5,7 +5,6 @@ import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
 import com.simibubi.create.foundation.gui.widget.IconButton;
-import com.tatnux.crafter.jei.PacketSendRecipe;
 import com.tatnux.crafter.lib.gui.CrafterIconButton;
 import com.tatnux.crafter.lib.gui.GuiTexture;
 import com.tatnux.crafter.lib.gui.WidgetBox;
@@ -18,10 +17,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
-import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -59,24 +56,13 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
         this.resetButton = new CrafterIconButton(
                 this.leftPos + 185,
                 this.topPos + 56,
-                AllIcons.I_TRASH)
+                AllIcons.I_DISABLE)
                 .withTooltip(Component.literal("Reset the recipe"))
-                .withDisabled(() -> this.menu.contentHolder.isCraftingEmpty())
-                .withCallback(() -> {
-                    NonNullList<ItemStack> items = NonNullList.withSize(10, ItemStack.EMPTY);
-                    NetworkHandler.sendRecipeToServer(PacketSendRecipe.create(items));
-                });
+                .tooltipWhenDisabled(false)
+                .withDisabled(this.menu::isCraftingEmpty)
+                .withCallback(() -> NetworkHandler.resetRecipe(this.menu.contentHolder.selected));
         this.addRenderableWidget(this.resetButton);
         this.addRenderableWidget(new WidgetBox(this.resetButton, BOX_COLOR));
-
-        this.resetButton = new IconButton(
-                this.leftPos + 185,
-                this.topPos + 56,
-                AllIcons.I_TRASH)
-                .withCallback(() -> {
-                    NonNullList<ItemStack> items = NonNullList.withSize(10, ItemStack.EMPTY);
-                    NetworkHandler.sendRecipeToServer(PacketSendRecipe.create(items));
-                });
 
         int buttonsX = this.leftPos + 40;
 
@@ -127,7 +113,24 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
                 .withDescription(Component.literal("No item is kept in the ingredients slots."))
                 .withCallback(() -> this.updateKeepMode(false));
 
-        this.addRenderableWidgets(extButton, extCButton, intButton, keepButton, dontKeepButton);
+        int ghostGap = 18 * 7;
+
+        AbstractSimiWidget ghostSaveButton = new CrafterIconButton(
+                buttonsX + ghostGap,
+                yFooter,
+                AllIcons.I_CONFIG_SAVE)
+                .withTooltip(Component.literal("Remember Items"))
+                .withCallback(() -> NetworkHandler.updateGhostItems(false));
+
+        AbstractSimiWidget ghostForgetButton = new CrafterIconButton(
+                buttonsX + ghostGap + 18 + 4,
+                yFooter,
+                AllIcons.I_TRASH)
+                .withDisabled(() -> this.menu.contentHolder.ghostSlots.isEmpty())
+                .withTooltip(Component.literal("Forget Items"))
+                .withCallback(() -> NetworkHandler.updateGhostItems(true));
+
+        this.addRenderableWidgets(extButton, extCButton, intButton, keepButton, dontKeepButton, ghostSaveButton, ghostForgetButton);
 
 
         RecipeList recipeList = new RecipeList(this, this.leftPos + 38, this.topPos - 2, 110, 75);
