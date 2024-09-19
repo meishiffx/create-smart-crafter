@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.gui.UIRenderHelper;
 import com.simibubi.create.foundation.gui.element.ScreenElement;
 import com.simibubi.create.foundation.utility.Color;
-import com.tatnux.crafter.SimplyCrafter;
+import com.tatnux.crafter.SmartCrafter;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -30,7 +30,7 @@ public enum GuiTexture implements ScreenElement {
     }
 
     GuiTexture(String location, int startX, int startY, int width, int height) {
-        this(SimplyCrafter.MOD_ID, location, startX, startY, width, height);
+        this(SmartCrafter.MOD_ID, location, startX, startY, width, height);
     }
 
     GuiTexture(String namespace, String location, int startX, int startY, int width, int height) {

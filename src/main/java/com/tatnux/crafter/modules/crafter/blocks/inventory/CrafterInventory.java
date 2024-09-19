@@ -1,7 +1,7 @@
 package com.tatnux.crafter.modules.crafter.blocks.inventory;
 
-import com.tatnux.crafter.modules.crafter.blocks.CrafterBlockEntity;
-import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
+import com.tatnux.crafter.modules.crafter.blocks.SmartCrafterBlockEntity;
+import com.tatnux.crafter.modules.crafter.blocks.SmartCrafterMenu;
 import com.tatnux.crafter.modules.crafter.blocks.slots.ItemValidator;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.ItemStackHandler;
@@ -9,9 +9,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class CrafterInventory extends ItemStackHandler implements ItemValidator {
 
-    private final CrafterBlockEntity blockEntity;
+    private final SmartCrafterBlockEntity blockEntity;
 
-    public CrafterInventory(CrafterBlockEntity blockEntity) {
+    public CrafterInventory(SmartCrafterBlockEntity blockEntity) {
         super(32);
         this.blockEntity = blockEntity;
     }
@@ -27,14 +27,15 @@ public class CrafterInventory extends ItemStackHandler implements ItemValidator 
         super.onContentsChanged(slot);
         this.blockEntity.sendData();
         this.blockEntity.setChanged();
+        this.blockEntity.retryRecipe();
     }
 
     public boolean canAutomationInsert(int slot) {
-        return slot >= CrafterMenu.CONTAINER_START && slot < CrafterMenu.CONTAINER_START + CrafterMenu.CONTAINER_SIZE;
+        return slot >= SmartCrafterMenu.CONTAINER_START && slot < SmartCrafterMenu.CONTAINER_START + SmartCrafterMenu.CONTAINER_SIZE;
     }
 
     public boolean canAutomationExtract(int slot) {
-        return slot >= CrafterMenu.RESULT_SLOT_START && slot < CrafterMenu.RESULT_SLOT_START + CrafterMenu.RESULT_SLOT_SIZE;
+        return slot >= SmartCrafterMenu.RESULT_SLOT_START && slot < SmartCrafterMenu.RESULT_SLOT_START + SmartCrafterMenu.RESULT_SLOT_SIZE;
     }
 
     @Override

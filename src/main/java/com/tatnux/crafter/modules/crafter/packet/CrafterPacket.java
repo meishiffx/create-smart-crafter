@@ -1,6 +1,6 @@
 package com.tatnux.crafter.modules.crafter.packet;
 
-import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
+import com.tatnux.crafter.modules.crafter.blocks.SmartCrafterMenu;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -14,13 +14,13 @@ public interface CrafterPacket {
             ServerPlayer player = ctx.get().getSender();
             if (player != null) {
                 ServerPlayer sender = Objects.requireNonNull(ctx.get().getSender());
-                if (sender.containerMenu instanceof CrafterMenu menu) {
+                if (sender.containerMenu instanceof SmartCrafterMenu menu) {
                     this.handleMenu(menu);
                 }
             }
         });
     }
 
-    void handleMenu(CrafterMenu menu);
+    void handleMenu(SmartCrafterMenu menu);
 
 }

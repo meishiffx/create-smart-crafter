@@ -14,8 +14,8 @@ import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.tatnux.crafter.lib.gui.CrafterIconButton;
 import com.tatnux.crafter.lib.gui.GuiTexture;
 import com.tatnux.crafter.lib.gui.WidgetBox;
-import com.tatnux.crafter.modules.crafter.CrafterModule;
-import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
+import com.tatnux.crafter.modules.crafter.SmartCrafterModule;
+import com.tatnux.crafter.modules.crafter.blocks.SmartCrafterMenu;
 import com.tatnux.crafter.modules.crafter.client.widget.RecipeList;
 import com.tatnux.crafter.modules.crafter.data.CraftMode;
 import com.tatnux.crafter.modules.crafter.data.CrafterRecipe;
@@ -38,15 +38,14 @@ import java.awt.*;
 
 import static com.simibubi.create.foundation.gui.AllGuiTextures.PLAYER_INVENTORY;
 
-public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
+public class SmartCrafterScreen extends AbstractSimiContainerScreen<SmartCrafterMenu> {
 
     public static final int BOX_COLOR = new Color(50, 100, 181).getRGB();
     protected static final GuiTexture BG = GuiTexture.CRAFTER;
     protected static final AllGuiTextures PLAYER = AllGuiTextures.PLAYER_INVENTORY;
+    private float lastRotate = 0;
 
-    private AbstractSimiWidget resetButton;
-
-    public CrafterScreen(CrafterMenu menu, Inventory inv, Component title) {
+    public SmartCrafterScreen(SmartCrafterMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
     }
 
@@ -66,7 +65,7 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
                     this.minecraft.player.closeContainer();
                 }));
 
-        this.resetButton = new CrafterIconButton(
+        AbstractSimiWidget resetButton = new CrafterIconButton(
                 this.leftPos + 185,
                 this.topPos + 56,
                 AllIcons.I_DISABLE)
@@ -74,8 +73,8 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
                 .tooltipWhenDisabled(false)
                 .withDisabled(this.menu::isCraftingEmpty)
                 .withCallback(() -> NetworkHandler.resetRecipe(this.menu.contentHolder.selected));
-        this.addRenderableWidget(this.resetButton);
-        this.addRenderableWidget(new WidgetBox(this.resetButton, BOX_COLOR));
+        this.addRenderableWidget(resetButton);
+        this.addRenderableWidget(new WidgetBox(resetButton, BOX_COLOR));
 
         int buttonsX = this.leftPos + 40;
 
@@ -180,14 +179,16 @@ public class CrafterScreen extends AbstractSimiContainerScreen<CrafterMenu> {
                 .rotateX(-22)
                 .rotateY(-202);
 
-        GuiGameElement.of(CrafterModule.CRAFTER
+        GuiGameElement.of(SmartCrafterModule.SMART_CRAFTER
                         .getDefaultState())
                 .render(graphics);
+
+        this.lastRotate = this.lastRotate % 360;
 
         TransformStack.cast(ms)
                 .pushPose();
         GuiGameElement.of(AllPartialModels.SHAFTLESS_COGWHEEL)
-                .rotateBlock(90, this.menu.contentHolder.getSpeed() > 0 ? partialTicks * -180 : 22, 0)
+                .rotateBlock(90, Math.abs(this.menu.contentHolder.getSpeed()) > 0 ? this.lastRotate = this.lastRotate + this.menu.contentHolder.getSpeed() / 24 : 22, 0)
                 .render(graphics);
         ms.popPose();
         ms.popPose();

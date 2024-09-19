@@ -16,13 +16,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import static com.simibubi.create.content.kinetics.base.HorizontalKineticBlock.HORIZONTAL_FACING;
 import static com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer.standardKineticRotationTransform;
 
-public class CrafterRenderer extends SafeBlockEntityRenderer<CrafterBlockEntity> {
+public class SmartCrafterRenderer extends SafeBlockEntityRenderer<SmartCrafterBlockEntity> {
 
-    public CrafterRenderer(BlockEntityRendererProvider.Context context) {
+    public SmartCrafterRenderer(BlockEntityRendererProvider.Context context) {
     }
 
     @Override
-    protected void renderSafe(CrafterBlockEntity be, float partialTicks, PoseStack ms,
+    protected void renderSafe(SmartCrafterBlockEntity be, float partialTicks, PoseStack ms,
                               MultiBufferSource buffer, int light, int overlay) {
         BlockState blockState = be.getBlockState();
         VertexConsumer vb = buffer.getBuffer(RenderType.solid());

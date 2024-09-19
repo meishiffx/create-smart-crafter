@@ -2,11 +2,11 @@
   "credit": "Made with Blockbench",
   "parent": "block/block",
   "textures": {
-    "3": "create:block/crafter_thingies",
-    "4": "create:block/crafter_side",
-    "5": "create:block/brass_casing",
-    "7": "create:block/brass_block",
-    "8": "create:block/smooth_dark_log_top",
+    "4": "smartcrafter:block/crafter_side",
+    "5": "smartcrafter:block/crafter_top",
+    "6": "create:block/brass_block",
+    "7": "smartcrafter:block/crafter_bottom",
+    "8": "create:block/palettes/stone_types/polished/deepslate_cut_polished",
     "particle": "create:block/brass_casing"
   },
   "elements": [
@@ -17,7 +17,7 @@
       "faces": {
         "north": {"uv": [0, 0, 16, 16], "texture": "#5"},
         "east": {"uv": [0, 0, 16, 6], "rotation": 90, "texture": "#4"},
-        "south": {"uv": [0, 0, 16, 16], "texture": "#7"},
+        "south": {"uv": [0, 0, 16, 16], "texture": "#6"},
         "west": {"uv": [16, 0, 0, 6], "rotation": 270, "texture": "#4"},
         "up": {"uv": [0, 0, 16, 6], "texture": "#4"},
         "down": {"uv": [0, 0, 16, 6], "rotation": 180, "texture": "#4"}
@@ -30,7 +30,7 @@
       "faces": {
         "north": {"uv": [0, 0, 16, 16], "rotation": 270, "texture": "#8"},
         "east": {"uv": [0, 10, 16, 16], "rotation": 90, "texture": "#4"},
-        "south": {"uv": [0, 0, 16, 16], "texture": "#5"},
+        "south": {"uv": [0, 0, 16, 16], "texture": "#7"},
         "west": {"uv": [16, 10, 0, 16], "rotation": 270, "texture": "#4"},
         "up": {"uv": [0, 10, 16, 16], "texture": "#4"},
         "down": {"uv": [0, 10, 16, 16], "rotation": 180, "texture": "#4"}

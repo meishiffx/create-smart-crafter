@@ -1,7 +1,7 @@
 package com.tatnux.crafter.jei;
 
-import com.tatnux.crafter.modules.crafter.CrafterModule;
-import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
+import com.tatnux.crafter.modules.crafter.SmartCrafterModule;
+import com.tatnux.crafter.modules.crafter.blocks.SmartCrafterMenu;
 import com.tatnux.crafter.modules.network.NetworkHandler;
 import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.constants.VanillaTypes;
@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
-public class CrafterRecipeTransferHandler implements IRecipeTransferHandler<CrafterMenu, CraftingRecipe> {
+public class CrafterRecipeTransferHandler implements IRecipeTransferHandler<SmartCrafterMenu, CraftingRecipe> {
 
     public static void register(IRecipeTransferRegistration transferRegistry) {
         transferRegistry.addRecipeTransferHandler(new CrafterRecipeTransferHandler(), RecipeTypes.CRAFTING);
@@ -32,13 +32,13 @@ public class CrafterRecipeTransferHandler implements IRecipeTransferHandler<Craf
 
     @Override
     @Nonnull
-    public Class<CrafterMenu> getContainerClass() {
-        return CrafterMenu.class;
+    public Class<SmartCrafterMenu> getContainerClass() {
+        return SmartCrafterMenu.class;
     }
 
     @Override
-    public @NotNull Optional<MenuType<CrafterMenu>> getMenuType() {
-        return Optional.of(CrafterModule.CRAFTER_MENU.get());
+    public @NotNull Optional<MenuType<SmartCrafterMenu>> getMenuType() {
+        return Optional.of(SmartCrafterModule.CRAFTER_MENU.get());
     }
 
     @Override
@@ -48,7 +48,7 @@ public class CrafterRecipeTransferHandler implements IRecipeTransferHandler<Craf
 
     @Override
     @Nullable
-    public IRecipeTransferError transferRecipe(CrafterMenu container, @NotNull CraftingRecipe recipe, IRecipeSlotsView recipeLayout,
+    public IRecipeTransferError transferRecipe(SmartCrafterMenu container, @NotNull CraftingRecipe recipe, IRecipeSlotsView recipeLayout,
                                                @NotNull Player player, boolean maxTransfer, boolean doTransfer) {
 
         if (doTransfer) {

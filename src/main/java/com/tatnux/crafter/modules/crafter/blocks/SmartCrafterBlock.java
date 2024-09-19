@@ -3,27 +3,24 @@ package com.tatnux.crafter.modules.crafter.blocks;
 import com.simibubi.create.content.kinetics.base.HorizontalKineticBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import com.simibubi.create.foundation.block.IBE;
-import com.tatnux.crafter.modules.crafter.CrafterModule;
+import com.tatnux.crafter.modules.crafter.SmartCrafterModule;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 
-public class CrafterBlock extends HorizontalKineticBlock implements IBE<CrafterBlockEntity>, ICogWheel {
+public class SmartCrafterBlock extends HorizontalKineticBlock implements IBE<SmartCrafterBlockEntity>, ICogWheel {
 
-    public CrafterBlock(Properties pProperties) {
+    public SmartCrafterBlock(Properties pProperties) {
         super(pProperties);
     }
 
@@ -48,13 +45,13 @@ public class CrafterBlock extends HorizontalKineticBlock implements IBE<CrafterB
     }
 
     @Override
-    public Class<CrafterBlockEntity> getBlockEntityClass() {
-        return CrafterBlockEntity.class;
+    public Class<SmartCrafterBlockEntity> getBlockEntityClass() {
+        return SmartCrafterBlockEntity.class;
     }
 
     @Override
-    public BlockEntityType<? extends CrafterBlockEntity> getBlockEntityType() {
-        return CrafterModule.CRAFTER_BLOCK_ENTITY.get();
+    public BlockEntityType<? extends SmartCrafterBlockEntity> getBlockEntityType() {
+        return SmartCrafterModule.SMART_CRAFTER_BLOCK_ENTITY.get();
     }
 
     @Override

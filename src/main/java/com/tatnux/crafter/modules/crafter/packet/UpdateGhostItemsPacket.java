@@ -1,6 +1,6 @@
 package com.tatnux.crafter.modules.crafter.packet;
 
-import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
+import com.tatnux.crafter.modules.crafter.blocks.SmartCrafterMenu;
 import net.minecraft.network.FriendlyByteBuf;
 
 public record UpdateGhostItemsPacket(boolean reset) implements CrafterPacket {
@@ -14,7 +14,7 @@ public record UpdateGhostItemsPacket(boolean reset) implements CrafterPacket {
     }
 
     @Override
-    public void handleMenu(CrafterMenu menu) {
+    public void handleMenu(SmartCrafterMenu menu) {
         menu.contentHolder.updateGhostItems(this.reset);
     }
 }

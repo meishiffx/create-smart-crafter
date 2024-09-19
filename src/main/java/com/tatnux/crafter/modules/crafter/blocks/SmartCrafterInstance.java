@@ -8,9 +8,9 @@ import com.simibubi.create.content.kinetics.base.SingleRotatingInstance;
 import com.simibubi.create.content.kinetics.base.flwdata.RotatingData;
 import net.minecraft.core.Direction;
 
-public class CrafterInstance extends SingleRotatingInstance<KineticBlockEntity> {
+public class SmartCrafterInstance extends SingleRotatingInstance<KineticBlockEntity> {
 
-    public CrafterInstance(MaterialManager materialManager, KineticBlockEntity blockEntity) {
+    public SmartCrafterInstance(MaterialManager materialManager, KineticBlockEntity blockEntity) {
         super(materialManager, blockEntity);
     }
 

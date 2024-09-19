@@ -1,10 +1,11 @@
 package com.tatnux.crafter.modules.crafter.blocks;
 
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
+import com.tatnux.crafter.config.Config;
 import com.tatnux.crafter.lib.list.NonNullListFactory;
 import com.tatnux.crafter.lib.menu.InventoryTools;
 import com.tatnux.crafter.lib.menu.UndoableItemHandler;
-import com.tatnux.crafter.modules.crafter.CrafterModule;
+import com.tatnux.crafter.modules.crafter.SmartCrafterModule;
 import com.tatnux.crafter.modules.crafter.blocks.inventory.AutomationInventory;
 import com.tatnux.crafter.modules.crafter.blocks.inventory.CrafterInventory;
 import com.tatnux.crafter.modules.crafter.blocks.inventory.WorkingCraftingInventory;
@@ -18,6 +19,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -27,6 +29,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
@@ -39,11 +42,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Optional;
 
-import static com.tatnux.crafter.modules.crafter.blocks.CrafterMenu.*;
+import static com.tatnux.crafter.modules.crafter.blocks.SmartCrafterMenu.*;
 import static com.tatnux.crafter.modules.crafter.data.CraftMode.EXTC;
 import static com.tatnux.crafter.modules.crafter.data.CraftMode.INT;
 
-public class CrafterBlockEntity extends KineticBlockEntity implements MenuProvider {
+public class SmartCrafterBlockEntity extends KineticBlockEntity implements MenuProvider {
 
     public final CrafterInventory inventory;
     private final AutomationInventory automationInventory;
@@ -55,9 +58,11 @@ public class CrafterBlockEntity extends KineticBlockEntity implements MenuProvid
     public boolean keepMode = false;
     public GhostSlots ghostSlots;
     private final CraftingContainer workInventory = new WorkingCraftingInventory();
-    private int progress = 0;
+    private boolean noRecipeWork = false;
+    private float progress = -1;
+    private boolean processing = false;
 
-    public CrafterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+    public SmartCrafterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         this.inventory = new CrafterInventory(this);
         this.automationInventory = new AutomationInventory(this.inventory);
@@ -91,6 +96,11 @@ public class CrafterBlockEntity extends KineticBlockEntity implements MenuProvid
         }
 
         this.transferRecipe(NonNullList.withSize(10, ItemStack.EMPTY));
+        this.retryRecipe();
+    }
+
+    public void retryRecipe() {
+        this.noRecipeWork = false;
     }
 
     // From Client
@@ -114,6 +124,7 @@ public class CrafterBlockEntity extends KineticBlockEntity implements MenuProvid
         this.getSelectedRecipe().setRecipe(recipe);
 
         this.inventory.setStackInSlot(CRAFT_RESULT_SLOT, output);
+        this.retryRecipe();
     }
 
     public void updateGhostItems(boolean reset) {
@@ -128,7 +139,7 @@ public class CrafterBlockEntity extends KineticBlockEntity implements MenuProvid
             }
         }
         this.notifyUpdate();
-
+        this.retryRecipe();
     }
 
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
@@ -154,12 +165,12 @@ public class CrafterBlockEntity extends KineticBlockEntity implements MenuProvid
 
     @Override
     public @NotNull Component getDisplayName() {
-        return CrafterModule.CRAFTER.get().getName();
+        return SmartCrafterModule.SMART_CRAFTER.get().getName();
     }
 
     @Override
     public @Nullable AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
-        return CrafterMenu.create(id, inv, this);
+        return SmartCrafterMenu.create(id, inv, this);
     }
 
     @Override
@@ -168,15 +179,34 @@ public class CrafterBlockEntity extends KineticBlockEntity implements MenuProvid
         if (this.level.isClientSide()) {
             return;
         }
-        this.progress += (int) (this.getSpeed() * (this.getSpeed() / 2)) + 200;
-        if (this.progress > 33768) {
-            this.craftOneCycle();
-            this.progress = 0;
+
+        if (this.noRecipeWork || this.getSpeed() == 0) {
+            return;
+        }
+
+        if (this.processing) {
+            if (this.progress <= 0) {
+                if (!this.craftOneCycle()) {
+                    this.noRecipeWork = true;
+                }
+                this.processing = false;
+            } else {
+                this.progress -= Mth.clamp(Math.abs(this.getSpeed()) / Config.common().speedRatio.get(), 1, 128);
+            }
+        } else {
+            this.progress = Config.common().crafterProgressNeeded.get();
+            this.processing = true;
         }
     }
 
     private boolean craftOneCycle() {
-        return this.recipes.stream().anyMatch(this::craftRecipe);
+        boolean craftedAtLeastOneThing = false;
+        for (CrafterRecipe craftingRecipe : this.recipes) {
+            if (this.craftRecipe(craftingRecipe)) {
+                craftedAtLeastOneThing = true;
+            }
+        }
+        return craftedAtLeastOneThing;
     }
 
     private boolean craftRecipe(CrafterRecipe recipe) {
@@ -186,14 +216,13 @@ public class CrafterBlockEntity extends KineticBlockEntity implements MenuProvid
             return false;
         }
 
-        CraftingRecipe craftingRecipe = optionalCraftingRecipe.get();
-
         UndoableItemHandler undoHandler = new UndoableItemHandler(this.inventory);
         if (!this.testAndConsume(recipe, undoHandler)) {
             undoHandler.restore();
             return false;
         }
 
+        CraftingRecipe craftingRecipe = optionalCraftingRecipe.get();
         ItemStack result = craftingRecipe.assemble(this.workInventory, this.level.registryAccess());
 
         CraftMode mode = recipe.getCraftMode();
@@ -240,8 +269,8 @@ public class CrafterBlockEntity extends KineticBlockEntity implements MenuProvid
                 if (index < ingredients.size()) {
                     Ingredient ingredient = ingredients.get(index);
                     if (ingredient != Ingredient.EMPTY) {
-                        for (int j = 0; j < CrafterMenu.CONTAINER_SIZE; j++) {
-                            int slotIdx = CrafterMenu.CONTAINER_START + j;
+                        for (int j = 0; j < SmartCrafterMenu.CONTAINER_SIZE; j++) {
+                            int slotIdx = SmartCrafterMenu.CONTAINER_START + j;
                             ItemStack input = undoHandler.getStackInSlot(slotIdx);
                             if (!input.isEmpty() && input.getCount() > keep) {
                                 if (ingredient.test(input)) {
@@ -265,11 +294,11 @@ public class CrafterBlockEntity extends KineticBlockEntity implements MenuProvid
         int stop;
         // Set the target container slots depending on the current mode
         if (mode == INT) {
-            start = CrafterMenu.CONTAINER_START;
-            stop = CrafterMenu.CONTAINER_START + CrafterMenu.CONTAINER_SIZE;
+            start = SmartCrafterMenu.CONTAINER_START;
+            stop = SmartCrafterMenu.CONTAINER_START + SmartCrafterMenu.CONTAINER_SIZE;
         } else {
-            start = CrafterMenu.RESULT_SLOT_START;
-            stop = CrafterMenu.RESULT_SLOT_START + CrafterMenu.RESULT_SLOT_SIZE;
+            start = SmartCrafterMenu.RESULT_SLOT_START;
+            stop = SmartCrafterMenu.RESULT_SLOT_START + SmartCrafterMenu.RESULT_SLOT_SIZE;
         }
         // Test if the operation is ok
         ItemStack remaining = InventoryTools.insertItemRanged(undoHandler, result, start, stop, true);
@@ -311,7 +340,6 @@ public class CrafterBlockEntity extends KineticBlockEntity implements MenuProvid
         this.updateWorkInventory();
         this.setChanged();
     }
-
 
     @Override
     protected void write(CompoundTag tag, boolean clientPacket) {

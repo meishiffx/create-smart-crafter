@@ -1,6 +1,6 @@
 package com.tatnux.crafter.modules.crafter.packet;
 
-import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
+import com.tatnux.crafter.modules.crafter.blocks.SmartCrafterMenu;
 import com.tatnux.crafter.modules.crafter.data.CraftMode;
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -15,7 +15,7 @@ public record SelectCraftModePacket(CraftMode mode) implements CrafterPacket {
     }
 
     @Override
-    public void handleMenu(CrafterMenu menu) {
+    public void handleMenu(SmartCrafterMenu menu) {
         menu.contentHolder.setCraftMode(this.mode);
     }
 }

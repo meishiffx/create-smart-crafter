@@ -2,7 +2,7 @@ package com.tatnux.crafter.modules.crafter.client.widget;
 
 import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
 import com.tatnux.crafter.lib.gui.ItemRenderUtils;
-import com.tatnux.crafter.modules.crafter.client.CrafterScreen;
+import com.tatnux.crafter.modules.crafter.client.SmartCrafterScreen;
 import com.tatnux.crafter.modules.crafter.data.CrafterRecipe;
 import com.tatnux.crafter.modules.network.NetworkHandler;
 import net.minecraft.client.Minecraft;
@@ -21,9 +21,9 @@ public class RecipeEntry extends AbstractSimiWidget {
     public static final int SELECTED_COLOR = new Color(91, 153, 194).getRGB();
 
     public byte index;
-    private final CrafterScreen parent;
+    private final SmartCrafterScreen parent;
 
-    protected RecipeEntry(CrafterScreen parent, byte index, int x, int y, int width, int height) {
+    protected RecipeEntry(SmartCrafterScreen parent, byte index, int x, int y, int width, int height) {
         super(x, y, width, height);
         this.parent = parent;
         this.index = index;

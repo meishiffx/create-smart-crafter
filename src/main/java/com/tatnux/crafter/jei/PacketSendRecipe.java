@@ -1,7 +1,7 @@
 package com.tatnux.crafter.jei;
 
-import com.tatnux.crafter.SimplyCrafter;
-import com.tatnux.crafter.modules.crafter.blocks.CrafterMenu;
+import com.tatnux.crafter.SmartCrafter;
+import com.tatnux.crafter.modules.crafter.blocks.SmartCrafterMenu;
 import com.tatnux.crafter.modules.crafter.packet.CrafterPacket;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
@@ -11,7 +11,7 @@ import net.minecraft.world.item.ItemStack;
 
 public record PacketSendRecipe(NonNullList<ItemStack> stacks) implements CrafterPacket {
 
-    public static final ResourceLocation ID = new ResourceLocation(SimplyCrafter.MOD_ID, "sendrecipe");
+    public static final ResourceLocation ID = new ResourceLocation(SmartCrafter.MOD_ID, "sendrecipe");
 
     public static PacketSendRecipe create(NonNullList<ItemStack> items) {
         return new PacketSendRecipe(items);
@@ -34,7 +34,7 @@ public record PacketSendRecipe(NonNullList<ItemStack> stacks) implements Crafter
     }
 
     @Override
-    public void handleMenu(CrafterMenu menu) {
+    public void handleMenu(SmartCrafterMenu menu) {
         menu.contentHolder.transferRecipe(this.stacks);
     }
 }

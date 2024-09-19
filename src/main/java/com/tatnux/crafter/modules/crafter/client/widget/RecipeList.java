@@ -1,7 +1,7 @@
 package com.tatnux.crafter.modules.crafter.client.widget;
 
 import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
-import com.tatnux.crafter.modules.crafter.client.CrafterScreen;
+import com.tatnux.crafter.modules.crafter.client.SmartCrafterScreen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
@@ -14,12 +14,12 @@ public class RecipeList extends AbstractSimiWidget {
 
     public static final int SIZE = 5;
 
-    private final CrafterScreen parent;
+    private final SmartCrafterScreen parent;
     private int scrollOffset = 0;
 
     private final List<RecipeEntry> entries = new ArrayList<>(SIZE);
 
-    public RecipeList(CrafterScreen parent, int x, int y, int width, int height) {
+    public RecipeList(SmartCrafterScreen parent, int x, int y, int width, int height) {
         super(x, y, width, height);
         this.parent = parent;
     }

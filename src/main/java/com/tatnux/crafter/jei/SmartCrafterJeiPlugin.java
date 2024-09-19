@@ -1,7 +1,7 @@
 package com.tatnux.crafter.jei;
 
-import com.tatnux.crafter.SimplyCrafter;
-import com.tatnux.crafter.modules.crafter.CrafterModule;
+import com.tatnux.crafter.SmartCrafter;
+import com.tatnux.crafter.modules.crafter.SmartCrafterModule;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
@@ -12,11 +12,11 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 @JeiPlugin
-public class SimplyCrafterJeiPlugin implements IModPlugin {
+public class SmartCrafterJeiPlugin implements IModPlugin {
 
     @Override
     public @NotNull ResourceLocation getPluginUid() {
-        return new ResourceLocation(SimplyCrafter.MOD_ID, SimplyCrafter.MOD_ID);
+        return new ResourceLocation(SmartCrafter.MOD_ID, SmartCrafter.MOD_ID);
     }
 
     @Override
@@ -26,6 +26,6 @@ public class SimplyCrafterJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
-        registration.addRecipeCatalyst(new ItemStack(CrafterModule.CRAFTER), RecipeTypes.CRAFTING);
+        registration.addRecipeCatalyst(new ItemStack(SmartCrafterModule.SMART_CRAFTER), RecipeTypes.CRAFTING);
     }
 }

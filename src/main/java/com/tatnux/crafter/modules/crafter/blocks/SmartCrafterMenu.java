@@ -2,7 +2,7 @@ package com.tatnux.crafter.modules.crafter.blocks;
 
 import com.simibubi.create.foundation.gui.menu.MenuBase;
 import com.tatnux.crafter.lib.menu.SlotItemHandlerFactory;
-import com.tatnux.crafter.modules.crafter.CrafterModule;
+import com.tatnux.crafter.modules.crafter.SmartCrafterModule;
 import com.tatnux.crafter.modules.crafter.blocks.slots.InfoSlot;
 import com.tatnux.crafter.modules.crafter.blocks.slots.ItemValidator;
 import com.tatnux.crafter.modules.crafter.blocks.slots.ResultSlot;
@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
 
-public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
+public class SmartCrafterMenu extends MenuBase<SmartCrafterBlockEntity> {
 
     public static final int CRAFT_RESULT_SLOT = 0;
     public static final int CRAFT_SLOT_START = CRAFT_RESULT_SLOT + 1;
@@ -33,21 +33,21 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
     public static final int RESULT_SLOT_SIZE = 4;
     public static final int PLAYER_SLOT_START = RESULT_SLOT_START + RESULT_SLOT_SIZE;
 
-    public CrafterMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+    public SmartCrafterMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
 
-    public CrafterMenu(MenuType<?> type, int id, Inventory inv, CrafterBlockEntity be) {
+    public SmartCrafterMenu(MenuType<?> type, int id, Inventory inv, SmartCrafterBlockEntity be) {
         super(type, id, inv, be);
 
     }
 
-    public static CrafterMenu create(int id, Inventory inv, CrafterBlockEntity be) {
-        return new CrafterMenu(CrafterModule.CRAFTER_MENU.get(), id, inv, be);
+    public static SmartCrafterMenu create(int id, Inventory inv, SmartCrafterBlockEntity be) {
+        return new SmartCrafterMenu(SmartCrafterModule.CRAFTER_MENU.get(), id, inv, be);
     }
 
     @Override
-    protected CrafterBlockEntity createOnClient(FriendlyByteBuf extraData) {
+    protected SmartCrafterBlockEntity createOnClient(FriendlyByteBuf extraData) {
         BlockPos readBlockPos = extraData.readBlockPos();
         CompoundTag readNbt = extraData.readNbt();
         ClientLevel world = Minecraft.getInstance().level;
@@ -56,9 +56,9 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
         }
 
         BlockEntity blockEntity = world.getBlockEntity(readBlockPos);
-        if (blockEntity instanceof CrafterBlockEntity crafterBlockEntity) {
-            crafterBlockEntity.readClient(readNbt);
-            return crafterBlockEntity;
+        if (blockEntity instanceof SmartCrafterBlockEntity smartCrafterBlockEntity) {
+            smartCrafterBlockEntity.readClient(readNbt);
+            return smartCrafterBlockEntity;
         }
         return null;
     }
@@ -84,11 +84,11 @@ public class CrafterMenu extends MenuBase<CrafterBlockEntity> {
 
 
     @Override
-    protected void initAndReadInventory(CrafterBlockEntity contentHolder) {
+    protected void initAndReadInventory(SmartCrafterBlockEntity contentHolder) {
     }
 
     @Override
-    protected void saveData(CrafterBlockEntity contentHolder) {
+    protected void saveData(SmartCrafterBlockEntity contentHolder) {
     }
 
     @Override

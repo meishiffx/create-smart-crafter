@@ -1,0 +1,36 @@
+{
+  "type": "create:mechanical_crafting",
+  "acceptMirrored": true,
+  "key": {
+    "B": {
+      "item": "create:brass_casing"
+    },
+    "C": {
+      "item": "create:mechanical_crafter"
+    },
+    "D": {
+      "item": "create:depot"
+    },
+    "H": {
+      "item": "create:smart_chute"
+    },
+    "P": {
+      "item": "create:precision_mechanism"
+    },
+    "T": {
+      "item": "create:electron_tube"
+    },
+    "W": {
+      "item": "create:cogwheel"
+    }
+  },
+  "pattern": [
+    "BPB",
+    "CTC",
+    "HWH",
+    "BDB"
+  ],
+  "result": {
+    "item": "smartcrafter:smart_crafter"
+  }
+}
