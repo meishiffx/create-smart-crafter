@@ -1,5 +1,6 @@
 package com.tatnux.crafter.modules.crafter.blocks;
 
+import com.simibubi.create.AllItems;
 import com.simibubi.create.content.kinetics.base.HorizontalKineticBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import com.simibubi.create.foundation.block.IBE;
@@ -32,6 +33,10 @@ public class SmartCrafterBlock extends HorizontalKineticBlock implements IBE<Sma
         }
 
         if (player instanceof FakePlayer) {
+            return InteractionResult.PASS;
+        }
+
+        if (AllItems.WRENCH.isIn(player.getItemInHand(hand))) {
             return InteractionResult.PASS;
         }
 

@@ -1,16 +1,20 @@
 package com.tatnux.crafter.modules.crafter;
 
 
-import com.simibubi.create.*;
+import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllItems;
+import com.simibubi.create.Create;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
-import com.simibubi.create.content.kinetics.crafter.MechanicalCraftingRecipe;
 import com.simibubi.create.content.kinetics.crafter.ShaftlessCogwheelInstance;
 import com.simibubi.create.foundation.data.BlockStateGen;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.simibubi.create.foundation.data.recipe.MechanicalCraftingRecipeBuilder;
 import com.tatnux.crafter.SmartCrafter;
 import com.tatnux.crafter.lib.module.IModule;
-import com.tatnux.crafter.modules.crafter.blocks.*;
+import com.tatnux.crafter.modules.crafter.blocks.SmartCrafterBlock;
+import com.tatnux.crafter.modules.crafter.blocks.SmartCrafterBlockEntity;
+import com.tatnux.crafter.modules.crafter.blocks.SmartCrafterMenu;
+import com.tatnux.crafter.modules.crafter.blocks.SmartCrafterRenderer;
 import com.tatnux.crafter.modules.crafter.client.SmartCrafterScreen;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
@@ -18,7 +22,6 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.entry.MenuEntry;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
@@ -46,7 +49,7 @@ public class SmartCrafterModule implements IModule {
             .transform(copyNbt("Inventory", "SelectedRecipe", "Recipes", "KeepMode", "GhostSlots"))
             .transform(pickaxeOnly())
             .blockstate(BlockStateGen.horizontalBlockProvider(true))
-            .transform(BlockStressDefaults.setImpact(5.0))
+            .transform(BlockStressDefaults.setImpact(6.0))
             .addLayer(() -> RenderType::cutoutMipped)
             .item()
             .transform(customItemModel())

@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 
+import static com.simibubi.create.content.kinetics.base.DirectionalKineticBlock.FACING;
 import static com.simibubi.create.content.kinetics.base.HorizontalKineticBlock.HORIZONTAL_FACING;
 import static com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer.standardKineticRotationTransform;
 
@@ -30,7 +31,7 @@ public class SmartCrafterRenderer extends SafeBlockEntityRenderer<SmartCrafterBl
         if (!Backend.canUseInstancing(be.getLevel())) {
             SuperByteBuffer superBuffer = CachedBufferer.partial(AllPartialModels.SHAFTLESS_COGWHEEL, blockState);
             standardKineticRotationTransform(superBuffer, be, light);
-            superBuffer.rotateCentered(Direction.UP, (float) (blockState.getValue(HORIZONTAL_FACING)
+            superBuffer.rotateCentered(Direction.UP, (float) (blockState.getOptionalValue(HORIZONTAL_FACING).orElseGet(() -> blockState.getValue(FACING))
                     .getAxis() != Direction.Axis.X ? 0 : Math.PI / 2));
             superBuffer.rotateCentered(Direction.EAST, (float) (Math.PI / 2));
             superBuffer.renderInto(ms, vb);
