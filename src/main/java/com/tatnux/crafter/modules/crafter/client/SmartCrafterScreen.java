@@ -2,7 +2,11 @@ package com.tatnux.crafter.modules.crafter.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
@@ -34,7 +38,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
-import java.awt.*;
+import java.awt.Color;
 
 import static com.simibubi.create.foundation.gui.AllGuiTextures.PLAYER_INVENTORY;
 
@@ -245,13 +249,12 @@ public class SmartCrafterScreen extends AbstractSimiContainerScreen<SmartCrafter
         float f = 0.00390625F;
         float f1 = 0.00390625F;
         Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder buffer = tessellator.getBuilder();
-        buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        buffer.vertex(matrix, (float) (x), (float) (y + height), zLevel).uv((float) (u) * f, (float) (v + height) * f1).endVertex();
-        buffer.vertex(matrix, (float) (x + width), (float) (y + height), zLevel).uv((float) (u + width) * f, (float) (v + height) * f1).endVertex();
-        buffer.vertex(matrix, (float) (x + width), (float) (y), zLevel).uv((float) (u + width) * f, (float) (v) * f1).endVertex();
-        buffer.vertex(matrix, (float) (x), (float) (y), zLevel).uv((float) (u) * f, (float) (v) * f1).endVertex();
-        tessellator.end();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        buffer.addVertex(matrix, x, (y + height), zLevel).setUv(u * f, (v + height) * f1);
+        buffer.addVertex(matrix, (x + width), (y + height), zLevel).setUv((u + width) * f, (v + height) * f1);
+        buffer.addVertex(matrix, (x + width), (y), zLevel).setUv((u + width) * f, (v) * f1);
+        buffer.addVertex(matrix, x, (y), zLevel).setUv((u) * f, (v) * f1);
+        tessellator.clear();
     }
 
     private void updateCraftMode(CraftMode mode) {
