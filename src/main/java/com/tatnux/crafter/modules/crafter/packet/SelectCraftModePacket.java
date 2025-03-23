@@ -14,7 +14,7 @@ public record SelectCraftModePacket(CraftMode mode) implements CrafterPacket {
     public static final CustomPacketPayload.Type<SelectCraftModePacket> TYPE = new CustomPacketPayload.Type<>(SmartCrafter.asResource("craft_mode"));
 
     public static final StreamCodec<ByteBuf, SelectCraftModePacket> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.idMapper(CraftMode.BY_ID, CraftMode::ordinal), SelectCraftModePacket::mode,
+            CraftMode.STREAM_CODEC, SelectCraftModePacket::mode,
             SelectCraftModePacket::new
     );
 

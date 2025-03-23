@@ -55,7 +55,7 @@ public class SmartCrafterBlockEntity extends KineticBlockEntity implements MenuP
     public final CrafterInventory inventory;
     private final AutomationInventory automationInventory;
 
-    public final NonNullList<CrafterRecipe> recipes;
+    public List<CrafterRecipe> recipes;
     public byte selectedRecipeIndex = 0;
     public boolean keepMode = false;
     public GhostSlots ghostSlots;
@@ -332,6 +332,7 @@ public class SmartCrafterBlockEntity extends KineticBlockEntity implements MenuP
         ItemHelper.fillItemStackHandler(componentInput.get(SmartCrafterComponents.SMART_CRAFTER_INVENTORY), inventory);
         this.keepMode = componentInput.get(SmartCrafterComponents.SMART_CRAFTER_KEEP_MODE);
         this.selectedRecipeIndex = componentInput.get(SmartCrafterComponents.SMART_CRAFTER_SELECTED_INDEX);
+        this.recipes = componentInput.get(SmartCrafterComponents.SMART_CRAFTER_RECIPES);
     }
 
     @Override
@@ -340,5 +341,6 @@ public class SmartCrafterBlockEntity extends KineticBlockEntity implements MenuP
         components.set(SmartCrafterComponents.SMART_CRAFTER_INVENTORY, ItemHelper.containerContentsFromHandler(inventory));
         components.set(SmartCrafterComponents.SMART_CRAFTER_KEEP_MODE, this.keepMode);
         components.set(SmartCrafterComponents.SMART_CRAFTER_SELECTED_INDEX, this.selectedRecipeIndex);
+        components.set(SmartCrafterComponents.SMART_CRAFTER_RECIPES, this.recipes);
     }
 }

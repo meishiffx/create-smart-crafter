@@ -111,7 +111,6 @@ public class SmartCrafterMenu extends MenuBase<SmartCrafterBlockEntity> {
                         .copy();
                 stackInSlot.setCount(stackInSlot.getMaxStackSize());
                 this.setCarried(stackInSlot);
-                return;
             }
             return;
         }

@@ -54,6 +54,7 @@ public class SmartCrafterModule implements IModule {
                                     .include(SmartCrafterComponents.SMART_CRAFTER_INVENTORY)
                                     .include(SmartCrafterComponents.SMART_CRAFTER_KEEP_MODE)
                                     .include(SmartCrafterComponents.SMART_CRAFTER_SELECTED_INDEX)
+                                    .include(SmartCrafterComponents.SMART_CRAFTER_RECIPES)
                             )
                     )
             )))
@@ -93,6 +94,5 @@ public class SmartCrafterModule implements IModule {
     public void initConfig(IEventBus eventBus) {
         SmartCrafterComponents.register(eventBus);
         eventBus.addListener(SmartCrafterBlockEntity::registerCapabilities);
-
     }
 }

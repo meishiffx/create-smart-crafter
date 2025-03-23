@@ -21,7 +21,8 @@
               "include": [
                 "smartcrafter:smart_crafter_inventory",
                 "smartcrafter:smart_crafter_keep_mode",
-                "smartcrafter:smart_crafter_selected_index"
+                "smartcrafter:smart_crafter_selected_index",
+                "smartcrafter:smart_crafter_recipes"
               ],
               "source": "block_entity"
             }
