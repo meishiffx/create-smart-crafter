@@ -170,18 +170,18 @@ public class SmartCrafterScreen extends AbstractSimiContainerScreen<SmartCrafter
         int invX = this.getLeftOfCentered(PLAYER_INVENTORY.getWidth());
         int invY = this.topPos + this.imageHeight - PLAYER.getHeight();
         this.renderPlayerInventory(graphics, invX, invY);
-        this.renderCrafter(graphics, x + BG.width + 55, y + BG.height + 15, partialTicks);
+        this.renderCrafter(graphics, x + BG.width + 55, y + BG.height + 15);
         this.drawGhostSlots(graphics);
     }
 
-    private void renderCrafter(GuiGraphics graphics, int x, int y, float partialTicks) {
+    private void renderCrafter(GuiGraphics graphics, int x, int y) {
         PoseStack ms = graphics.pose();
         TransformStack.of(ms)
                 .pushPose()
                 .translate(x, y, 100)
-                .scale(50)
-                .rotateX(-22)
-                .rotateY(-202);
+                .rotateX((float) Math.toRadians(-22))
+                .rotateY((float) Math.toRadians(-202))
+                .scale(50);
 
         GuiGameElement.of(SmartCrafterModule.SMART_CRAFTER
                         .getDefaultState())
@@ -189,10 +189,10 @@ public class SmartCrafterScreen extends AbstractSimiContainerScreen<SmartCrafter
 
         this.lastRotate = this.lastRotate % 360;
 
-        TransformStack.of(ms)
-                .pushPose();
+        TransformStack.of(ms).pushPose();
+
         GuiGameElement.of(AllPartialModels.SHAFTLESS_COGWHEEL)
-                .rotateBlock(90, Math.abs(this.menu.contentHolder.getSpeed()) > 0 ? this.lastRotate = this.lastRotate + this.menu.contentHolder.getSpeed() / 24 : 22, 0)
+                .rotateBlock(90, Math.abs(this.menu.contentHolder.getSpeed()) > 0 ? this.lastRotate = this.lastRotate - this.menu.contentHolder.getSpeed() / 24 : 22, 0)
                 .render(graphics);
         ms.popPose();
         ms.popPose();
@@ -227,7 +227,6 @@ public class SmartCrafterScreen extends AbstractSimiContainerScreen<SmartCrafter
     private static void renderGhostItem(GuiGraphics graphics, ItemStack stack, Slot slot) {
         renderAndDecorateItem(graphics, stack, slot.x, slot.y);
 
-//                    RenderSystem.disableLighting();// @todo 1.18
         RenderSystem.enableBlend();
         RenderSystem.disableDepthTest();
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
